@@ -12,12 +12,12 @@ import {
 <template>
   <main class="landing">
     <section class="landing-hero section-width">
-      <img class="hero-app-logo" :src="withBase('/logo.svg')" alt="迅树 MD 软件图标" width="112" height="112" />
+      <img class="hero-app-logo" :src="withBase('/logo.svg')" alt="灵仓 软件图标" width="112" height="112" />
       <p class="eyebrow"><span class="status-dot" /> 本地优先 · 自由记录 · 多端整理</p>
       <h1>让每份记录，<br class="mobile-only" />成为自己的资产</h1>
       <p class="hero-lead">以 Markdown 为基础，融合首页文件树、多格式附件与局域网同步。<br class="desktop-only" />在自己的设备中，建立清晰而自由的个人资料库。</p>
       <div class="hero-actions">
-        <a class="xs-button primary" :href="withBase('/download/')"><Download :size="17" />下载迅树 MD</a>
+        <a class="xs-button primary" :href="withBase('/download/')"><Download :size="17" />下载灵仓</a>
         <a class="xs-button secondary" :href="withBase('/demo/')"><Play :size="17" />在线体验</a>
       </div>
       <p class="platform-caption">面向 Windows / macOS / Android / iOS / iPadOS · 实际开放平台以发布信息为准</p>
@@ -28,7 +28,7 @@ import {
       <div class="preview-browser">
         <div class="browser-top">
           <span class="browser-dots"><i /><i /><i /></span>
-          <span>迅树 MD · 工作区界面</span>
+          <span>灵仓 · 工作区界面</span>
           <PanelLeft :size="16" />
         </div>
         <div class="preview-workspace">
@@ -66,7 +66,7 @@ import {
     <section class="section-intro section-width">
       <span class="eyebrow">三大核心亮点</span>
       <h2>专注记录，兼顾更多可能</h2>
-      <p>同步、管理、内容扩展。构成迅树 MD 的核心体验。</p>
+      <p>同步、管理、内容扩展。构成灵仓 的核心体验。</p>
     </section>
 
     <section class="feature-section section-width">
@@ -139,7 +139,7 @@ import {
 
     <section class="final-cta section-width">
       <span class="eyebrow">从这里开始</span>
-      <h2>开始使用迅树 MD</h2>
+      <h2>开始使用灵仓</h2>
       <p>下载软件，或者在浏览器中探索交互界面。</p>
       <div class="hero-actions">
         <a class="xs-button primary" :href="withBase('/download/')"><Download :size="17"/>软件下载</a>

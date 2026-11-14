@@ -1,5 +1,5 @@
 ---
-title: 迅树 MD — 让每份记录，成为自己的资产
+title: 灵仓 — 让每份记录，成为自己的资产
 layout: page
 sidebar: false
 aside: false

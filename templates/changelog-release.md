@@ -1,6 +1,6 @@
 ---
 title: v版本号 · YYYY-MM-DD
-description: 迅树 MD 版本更新说明
+description: 灵仓 版本更新说明
 ---
 
 # v版本号 · YYYY-MM-DD

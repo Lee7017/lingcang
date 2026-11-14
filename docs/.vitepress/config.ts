@@ -5,8 +5,8 @@ const base = process.env.SITE_BASE || '/'
 
 export default defineConfig({
   lang: 'zh-CN',
-  title: '迅树 MD',
-  description: '迅树 MD — 局域网同步、文件树管理与 Super MarkDown',
+  title: '灵仓',
+  description: '灵仓（LINGCANG）— 局域网同步、文件树管理与 Super MarkDown',
   base,
   // GitHub Pages 无法保证扩展名省略后的直访行为，使用 .html 文档路由
   cleanUrls: false,
@@ -16,11 +16,11 @@ export default defineConfig({
     ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}logo.svg` }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${base}apple-touch-icon.png` }],
     ['meta', { name: 'theme-color', content: '#f1f2f5' }],
-    ['meta', { name: 'description', content: '迅树 MD — 本地优先的 Markdown 笔记与资料管理工具' }]
+    ['meta', { name: 'description', content: '灵仓（LINGCANG）— 本地优先的 Markdown 笔记与资料管理工具' }]
   ],
   themeConfig: {
     logo: '/logo.svg',
-    siteTitle: '迅树 MD',
+    siteTitle: '灵仓',
     nav: [
       { text: '首页', link: '/' },
       { text: '下载', link: '/download/' },
@@ -59,6 +59,6 @@ export default defineConfig({
     darkModeSwitchTitle: '切换为深色模式',
     returnToTopLabel: '返回顶部',
     sidebarMenuLabel: '目录',
-    footer: { copyright: 'Copyright © 2026 迅树 MD. All rights reserved.' }
+    footer: { copyright: 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.' }
   }
 })

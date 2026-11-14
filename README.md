@@ -1,4 +1,4 @@
-# 迅树 MD 官网 · VitePress + Vue 源码
+# 灵仓（LINGCANG）官网 · VitePress + Vue 源码
 
 本项目依据对话中确认的官网结构，实现可编辑、可部署的 VitePress 网站。它不是 ChatGPT 内置组件的直接代码导出，而是用真实 Vue 单文件组件重新实现该布局。
 
@@ -60,7 +60,7 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 
 ## 将现有 Web Mock 接入 `/demo/`
 
-根据迅树 MD 原有设计，React + Vditor UI 使用构建期选定的内存 Mock API；**不可直接把 Native 版本打包成 Web 演示**。现有应用尚无公开 `build:demo` 入口，必须由应用工程单独添加并验证。
+根据灵仓 原有设计，React + Vditor UI 使用构建期选定的内存 Mock API；**不可直接把 Native 版本打包成 Web 演示**。现有应用尚无公开 `build:demo` 入口，必须由应用工程单独添加并验证。
 
 接入步骤：
 

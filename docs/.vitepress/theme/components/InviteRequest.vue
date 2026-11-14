@@ -3,12 +3,12 @@ import { ref } from 'vue'
 import { Mail, Copy, Check, ShieldCheck } from 'lucide-vue-next'
 
 const applicationEmail = '3406521093@qq.com'
-const applicationSubject = '迅树 MD 内测邀请码申请'
+const applicationSubject = '灵仓 内测邀请码申请'
 const applicationTemplate = [
   '昵称：请填写你的昵称',
   '手机号：请填写你的手机号',
   '',
-  '我想申请迅树 MD 内测邀请码，请通过本邮件回复。'
+  '我想申请灵仓 内测邀请码，请通过本邮件回复。'
 ].join('\n')
 const emailBody = ref(applicationTemplate)
 const copied = ref('')
@@ -35,7 +35,7 @@ async function copyText(key: string, value: string) {
   <main class="page-design invite-page section-width">
     <div class="page-intro">
       <span class="eyebrow">邀请内测</span>
-      <h1>申请迅树 MD 内测邀请码</h1>
+      <h1>申请灵仓 内测邀请码</h1>
       <p>请使用你自己的邮箱发送申请邮件，写明昵称和手机号。我们会通过邮件回复邀请码。</p>
     </div>
 
@@ -55,7 +55,7 @@ async function copyText(key: string, value: string) {
       </ol>
 
       <div class="invite-copy-section">
-        <div class="invite-copy-heading"><strong>收件邮箱</strong><span>发往迅树 MD</span></div>
+        <div class="invite-copy-heading"><strong>收件邮箱</strong><span>发往灵仓</span></div>
         <div class="invite-copy-row">
           <span class="invite-copy-value">{{ applicationEmail }}</span>
           <button class="xs-button secondary invite-copy-button" type="button" @click="copyText('email', applicationEmail)">

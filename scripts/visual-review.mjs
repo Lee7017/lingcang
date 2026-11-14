@@ -3,7 +3,7 @@ import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 
 const origin = process.env.PREVIEW_URL || 'http://127.0.0.1:4173/xunshu/'
-const output = 'visual-review'
+const output = 'lingcang-visual-review'
 mkdirSync(output, { recursive: true })
 const browser = await chromium.launch({ headless: true })
 const failures = []
@@ -69,7 +69,7 @@ for (const c of [
   if (c.label === 'downloads-desktop') {
     const link = page.getByRole('link', { name: /下载测试图片/ }).first()
     const href = await link.getAttribute('href')
-    if (!href?.includes('/releases/download/test-download-v1/xunshu-test-download.png')) failures.push('test download link missing')
+    if (!href?.includes('/releases/download/test-download-v1/lingcang-test-download.png')) failures.push('test download link missing')
     const card = page.locator('.download-card').first()
     const transformBefore = await card.evaluate(el => getComputedStyle(el).transform)
     await card.hover()
@@ -109,11 +109,11 @@ for (const c of [
       await capture(page, 'about-nav-desktop-before-click.png', false)
       await about.click()
       await page.waitForURL(/\/xunshu\/about\/?(?:\.html)?$/, { timeout: 6000 })
-      await page.waitForFunction(() => document.querySelector('h1')?.textContent?.includes('关于迅树 MD'), null, { timeout: 8000 })
+      await page.waitForFunction(() => document.querySelector('h1')?.textContent?.includes('关于灵仓'), null, { timeout: 8000 })
       const heading = await page.locator('h1').first().textContent()
       const acknowledgements = await page.getByRole('link', { name: '开源致谢' }).count()
       const licenses = await page.getByRole('link', { name: '第三方许可证' }).count()
-      if (!heading?.includes('关于迅树 MD')) failures.push('desktop: about page heading is wrong')
+      if (!heading?.includes('关于灵仓')) failures.push('desktop: about page heading is wrong')
       if (!acknowledgements || !licenses) failures.push('desktop: about page is missing related links')
       await capture(page, 'about-page-desktop.png')
       findings.push({ test: 'about-desktop', heading, acknowledgements, licenses, dropdownCount: groupCount })
@@ -128,9 +128,9 @@ for (const c of [
       await capture(page, 'about-nav-mobile-open.png', false)
       await link.click()
       await page.waitForURL(/\/xunshu\/about\/?(?:\.html)?$/, { timeout: 6000 })
-      await page.waitForFunction(() => document.querySelector('h1')?.textContent?.includes('关于迅树 MD'), null, { timeout: 8000 })
+      await page.waitForFunction(() => document.querySelector('h1')?.textContent?.includes('关于灵仓'), null, { timeout: 8000 })
       const heading = await page.locator('h1').first().textContent()
-      if (!heading?.includes('关于迅树 MD')) failures.push('mobile: about did not navigate')
+      if (!heading?.includes('关于灵仓')) failures.push('mobile: about did not navigate')
       await capture(page, 'about-page-mobile.png')
       findings.push({ test: 'about-mobile', heading })
     }
@@ -190,7 +190,7 @@ for (const c of [
   if (!metrics.heading) failures.push(c.label + ': missing page title')
   if (metrics.overflow > 2) failures.push(c.label + ': horizontal overflow ' + metrics.overflow)
   if (metrics.searchVisible) failures.push(c.label + ': removed search is visible')
-  if (!metrics.footerVisible || metrics.copyright !== 'Copyright © 2026 迅树 MD. All rights reserved.')
+  if (!metrics.footerVisible || metrics.copyright !== 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.')
     failures.push(c.label + ': copyright footer missing, hidden, or incorrect')
   if (metrics.theme !== c.theme) failures.push(c.label + ': mismatched color theme ' + metrics.theme)
   if (errors.length) failures.push(c.label + ': JS errors ' + errors.join(' | '))
@@ -256,7 +256,7 @@ for (const item of [
   if (!response?.ok()) failures.push(item.label + ': invite page HTTP ' + response?.status())
   const instructions = page.locator('.invite-panel')
   const content = await instructions.textContent()
-  for (const word of ['昵称', '手机号', '3406521093@qq.com', '迅树 MD 内测邀请码申请', '使用自己的账号']) {
+  for (const word of ['昵称', '手机号', '3406521093@qq.com', '灵仓 内测邀请码申请', '使用自己的账号']) {
     if (!content?.includes(word)) failures.push(item.label + ': missing instruction ' + word)
   }
   if (await instructions.locator('form, input, [data-mailto], a[href^="mailto:"]').count())
@@ -271,13 +271,13 @@ for (const item of [
   if (emailClipboard !== '3406521093@qq.com') failures.push(item.label + ': email copy mismatch')
   await subjectButton.click()
   const subjectClipboard = await page.evaluate(() => navigator.clipboard.readText())
-  if (subjectClipboard !== '迅树 MD 内测邀请码申请') failures.push(item.label + ': subject copy mismatch')
+  if (subjectClipboard !== '灵仓 内测邀请码申请') failures.push(item.label + ': subject copy mismatch')
   const editor = page.getByRole('textbox', { name: '邮件正文（可编辑）' })
   if (!await editor.isEditable()) failures.push(item.label + ': email body is not editable')
   const initialBody = await editor.inputValue()
   if (!initialBody.includes('昵称：请填写你的昵称') || !initialBody.includes('手机号：请填写你的手机号'))
     failures.push(item.label + ': initial email example missing')
-  const customBody = '昵称：测试用户\n手机号：13800123456\n\n我想申请迅树 MD 内测邀请码。'
+  const customBody = '昵称：测试用户\n手机号：13800123456\n\n我想申请灵仓 内测邀请码。'
   await editor.fill(customBody)
   if (await editor.inputValue() !== customBody) failures.push(item.label + ': editing email body failed')
   await bodyButton.click()
@@ -300,7 +300,7 @@ for (const item of [
   if (layout.overflow > 1) failures.push(item.label + ': horizontal overflow')
   if (layout.buttons.length !== 3 || layout.buttons.some(b => b.height !== 46 || b.corners !== '12px'))
     failures.push(item.label + ': copy button styling inconsistent')
-  if (layout.footer !== 'Copyright © 2026 迅树 MD. All rights reserved.') failures.push(item.label + ': footer missing')
+  if (layout.footer !== 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.') failures.push(item.label + ': footer missing')
   if (pageErrors.length) failures.push(item.label + ': JS exceptions ' + pageErrors.join(' | '))
   findings.push({ test: 'invite-manual-email', variant: item.label, emailClipboard, subjectClipboard, bodyCopied: true, ...layout })
   await capture(page, item.label + '.png', true)

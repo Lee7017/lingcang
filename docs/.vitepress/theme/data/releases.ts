@@ -24,4 +24,4 @@ export const releasePlatforms: ReleasePlatform[] = [
 export const releasesPageUrl = 'https://github.com/Lee7017/xunshu/releases'
 
 // 仅用于验证 GitHub Pages 官网到 GitHub Releases 的真实下载流程，不是软件安装包。
-export const testDownloadUrl = 'https://github.com/Lee7017/xunshu/releases/download/test-download-v1/xunshu-test-download.png'
+export const testDownloadUrl = 'https://github.com/Lee7017/xunshu/releases/download/test-download-v1/lingcang-test-download.png'

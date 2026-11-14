@@ -1,5 +1,5 @@
 /*
- * 迅树 MD · Monochrome Glass / 黑白玻璃拟态
+ * 灵仓 · Monochrome Glass / 黑白玻璃拟态
  * 官网、下载、演示、文档、更新日志共用的视觉规范。
  * 保留 VitePress 原生侧边栏与响应式交互，不设置网站级 Footer。
  */
@@ -548,7 +548,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   }
 }
 
-/* 迅树 MD 软件图标：使用用户提供的原始标识 */
+/* 灵仓 软件图标：使用用户提供的原始标识 */
 .hero-app-logo {
   display: block;
   width: 112px;
