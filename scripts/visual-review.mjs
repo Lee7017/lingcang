@@ -256,7 +256,7 @@ for (const item of [
   if (!response?.ok()) failures.push(item.label + ': invite page HTTP ' + response?.status())
   const instructions = page.locator('.invite-panel')
   const content = await instructions.textContent()
-  for (const word of ['昵称', '手机号', '3406521093@qq.com', '灵仓 内测邀请码申请', '使用自己的账号']) {
+  for (const word of ['昵称', '手机号', '3406521093@qq.com', '灵仓内测邀请码申请', '使用自己的账号']) {
     if (!content?.includes(word)) failures.push(item.label + ': missing instruction ' + word)
   }
   if (await instructions.locator('form, input, [data-mailto], a[href^="mailto:"]').count())
@@ -271,13 +271,13 @@ for (const item of [
   if (emailClipboard !== '3406521093@qq.com') failures.push(item.label + ': email copy mismatch')
   await subjectButton.click()
   const subjectClipboard = await page.evaluate(() => navigator.clipboard.readText())
-  if (subjectClipboard !== '灵仓 内测邀请码申请') failures.push(item.label + ': subject copy mismatch')
+  if (subjectClipboard !== '灵仓内测邀请码申请') failures.push(item.label + ': subject copy mismatch')
   const editor = page.getByRole('textbox', { name: '邮件正文（可编辑）' })
   if (!await editor.isEditable()) failures.push(item.label + ': email body is not editable')
   const initialBody = await editor.inputValue()
   if (!initialBody.includes('昵称：请填写你的昵称') || !initialBody.includes('手机号：请填写你的手机号'))
     failures.push(item.label + ': initial email example missing')
-  const customBody = '昵称：测试用户\n手机号：13800123456\n\n我想申请灵仓 内测邀请码。'
+  const customBody = '昵称：测试用户\n手机号：13800123456\n\n我想申请灵仓内测邀请码。'
   await editor.fill(customBody)
   if (await editor.inputValue() !== customBody) failures.push(item.label + ': editing email body failed')
   await bodyButton.click()

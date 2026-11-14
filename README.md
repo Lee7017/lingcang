@@ -60,7 +60,7 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 
 ## 将现有 Web Mock 接入 `/demo/`
 
-根据灵仓 原有设计，React + Vditor UI 使用构建期选定的内存 Mock API；**不可直接把 Native 版本打包成 Web 演示**。现有应用尚无公开 `build:demo` 入口，必须由应用工程单独添加并验证。
+根据灵仓原有设计，React + Vditor UI 使用构建期选定的内存 Mock API；**不可直接把 Native 版本打包成 Web 演示**。现有应用尚无公开 `build:demo` 入口，必须由应用工程单独添加并验证。
 
 接入步骤：
 

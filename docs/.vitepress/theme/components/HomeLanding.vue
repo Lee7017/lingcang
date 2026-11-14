@@ -12,7 +12,7 @@ import {
 <template>
   <main class="landing">
     <section class="landing-hero section-width">
-      <img class="hero-app-logo" :src="withBase('/logo.svg')" alt="灵仓 软件图标" width="112" height="112" />
+      <img class="hero-app-logo" :src="withBase('/logo.svg')" alt="灵仓软件图标" width="112" height="112" />
       <p class="eyebrow"><span class="status-dot" /> 本地优先 · 自由记录 · 多端整理</p>
       <h1>让每份记录，<br class="mobile-only" />成为自己的资产</h1>
       <p class="hero-lead">以 Markdown 为基础，融合首页文件树、多格式附件与局域网同步。<br class="desktop-only" />在自己的设备中，建立清晰而自由的个人资料库。</p>
@@ -66,7 +66,7 @@ import {
     <section class="section-intro section-width">
       <span class="eyebrow">三大核心亮点</span>
       <h2>专注记录，兼顾更多可能</h2>
-      <p>同步、管理、内容扩展。构成灵仓 的核心体验。</p>
+      <p>同步、管理、内容扩展。构成灵仓的核心体验。</p>
     </section>
 
     <section class="feature-section section-width">

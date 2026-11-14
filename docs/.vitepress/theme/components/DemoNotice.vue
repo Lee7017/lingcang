@@ -4,13 +4,13 @@ import { MonitorPlay, HardDrive, RefreshCcw, ShieldOff, ArrowRight, NotebookPen,
 </script>
 <template>
   <main class="page-design demo-page section-width">
-    <div class="page-intro"><span class="eyebrow">浏览器体验</span><h1>在线体验灵仓</h1><p>正式部署后，这里将加载灵仓 现有的 React + Vditor Web Mock，而不是另做一套简化版编辑器。</p></div>
+    <div class="page-intro"><span class="eyebrow">浏览器体验</span><h1>在线体验灵仓</h1><p>正式部署后，这里将加载灵仓现有的 React + Vditor Web Mock，而不是另做一套简化版编辑器。</p></div>
     <div class="demo-panel">
       <div class="demo-panel-top"><span><MonitorPlay :size="19"/> Web Mock 接入位置</span><span class="tag">未接入</span></div>
       <div class="demo-panel-body">
         <NotebookPen :size="44" stroke-width="1.25"/>
         <h2>等待接入现有 Web Mock 构建产物</h2>
-        <p>当前提供的是官网界面源码，尚未包含灵仓 的 React 应用。将实际 Web Mock 的静态构建产物复制到 Pages 部署目录的 <code>demo/</code> 后，会取代此占位页面。</p>
+        <p>当前提供的是官网界面源码，尚未包含灵仓的 React 应用。将实际 Web Mock 的静态构建产物复制到 Pages 部署目录的 <code>demo/</code> 后，会取代此占位页面。</p>
         <a class="xs-button secondary" :href="withBase('/guide/')">先阅读使用文档 <ArrowRight :size="16"/></a>
       </div>
     </div>

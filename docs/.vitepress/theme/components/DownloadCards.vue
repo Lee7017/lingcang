@@ -33,7 +33,7 @@ const iconMap = { monitor: Monitor, smartphone: Smartphone, laptop: Laptop, tabl
       <Info :size="23"/>
       <div>
         <strong>下载链路测试 · PNG 图片</strong>
-        <p>这是用于测试官网下载是否正常的灵仓 软件图标，不是真实安装包。点击下方按钮将从 GitHub Releases 下载 PNG 文件。</p>
+        <p>这是用于测试官网下载是否正常的灵仓软件图标，不是真实安装包。点击下方按钮将从 GitHub Releases 下载 PNG 文件。</p>
         <a class="xs-button secondary download-test-action" :href="testDownloadUrl" target="_blank" rel="noopener noreferrer"><Download :size="16"/>下载测试图片（PNG）</a>
       </div>
     </div>

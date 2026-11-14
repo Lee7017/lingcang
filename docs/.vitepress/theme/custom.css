@@ -548,7 +548,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   }
 }
 
-/* 灵仓 软件图标：使用用户提供的原始标识 */
+/* 灵仓软件图标：使用用户提供的原始标识 */
 .hero-app-logo {
   display: block;
   width: 112px;
