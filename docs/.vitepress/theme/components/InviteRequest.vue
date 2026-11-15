@@ -72,26 +72,15 @@ function onSmsClick(event: MouseEvent) {
       <h1>申请灵仓内测邀请码</h1>
     </div>
 
-    <section class="invite-panel" aria-labelledby="invite-instructions-title">
-      <div class="invite-panel-heading">
-        <div>
-          <h2 id="invite-instructions-title">通过短信申请</h2>
-          <p>短信由你本人确认发送，官网不会代发短信或收集申请表单。</p>
-        </div>
-      </div>
-
+    <section class="invite-panel" aria-label="短信邀请码申请">
       <div class="invite-copy-section">
-        <div class="invite-copy-heading"><strong>短信收件号码</strong><span>发往灵仓</span></div>
+        <div class="invite-copy-heading"><strong>短信收件号码</strong></div>
         <div class="invite-copy-row">
           <span class="invite-copy-value">{{ recipientPhone }}</span>
         </div>
       </div>
 
       <div class="invite-copy-section">
-        <div class="invite-copy-heading">
-          <strong>申请信息</strong>
-          <span>手机号、昵称必填；说明可不填</span>
-        </div>
         <div class="invite-fields">
           <label class="invite-field" for="invite-phone">
             <span>手机号 <em>必填</em></span>

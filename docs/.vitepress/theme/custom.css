@@ -700,7 +700,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 }
 
 
-/* 邀请码申请：复用全站按钮、卡片与文字规格。 */
+/* 邀请码申请：简洁表单布局，不使用大块玻璃卡片。 */
 .hero-invite-link, .final-invite-link {
   color: var(--xs-muted);
   font-size: 12px;
@@ -733,25 +733,44 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .invite-banner h2 { font-size: 17px; font-weight: 770; }
 .invite-banner p { margin-top: 6px; font-size: 12px; line-height: 1.8; color: var(--xs-muted); }
 .invite-banner .xs-button { flex-shrink: 0; }
-.invite-panel {
-  max-width: 650px;
-  margin: 0 auto;
-  padding: 32px;
-  background: var(--xs-frost);
-  border: 1px solid var(--xs-border);
-  border-radius: 20px;
-  box-shadow: var(--xs-shadow), inset 0 1px var(--xs-glow);
+.invite-page {
+  padding-top: 68px;
 }
-.invite-page .page-intro { margin-bottom: 34px; }
-.invite-page .page-intro h1 { margin: 0; }
-.invite-panel h2 { font-size: 21px; font-weight: 770; }
-.invite-panel-heading p { font-size: 12px; color: var(--xs-muted); margin-top: 7px; line-height: 1.8; }
-.invite-copy-section { padding: 18px 0; border-top: 1px solid var(--xs-rule); }
-.invite-copy-heading { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin-bottom: 12px; }
-.invite-copy-heading strong, .invite-copy-heading label { font-size: 14px; font-weight: 730; color: var(--xs-ink); }
-.invite-copy-heading span { color: var(--xs-muted); font-size: 11px; }
-.invite-copy-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.invite-copy-value { font-size: 14px; font-weight: 650; overflow-wrap: anywhere; min-width: 0; }
+.invite-page .page-intro {
+  max-width: 560px;
+  margin: 0 auto 30px;
+  text-align: left;
+}
+.invite-page .page-intro h1 {
+  margin: 0;
+  font-size: clamp(27px, 3vw, 36px);
+  font-weight: 720;
+  letter-spacing: -.035em;
+}
+.invite-panel {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.invite-copy-section {
+  padding: 0;
+  margin: 0 0 27px;
+  border: 0;
+}
+.invite-panel > .invite-copy-section:first-child {
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--xs-rule);
+}
+.invite-copy-heading { margin-bottom: 9px; }
+.invite-copy-heading strong { font-size: 13px; font-weight: 600; color: var(--xs-muted); }
+.invite-copy-row { display: flex; align-items: center; }
+.invite-copy-value { font-size: 19px; font-weight: 650; letter-spacing: .025em; overflow-wrap: anywhere; min-width: 0; }
 .invite-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
 .invite-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 13px; }
 .invite-field span { font-weight: 650; color: var(--xs-ink); }
@@ -772,13 +791,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .invite-sms-actions .xs-button { flex: 1; min-width: 0; }
 .invite-sms-actions .xs-button.disabled { pointer-events: none; opacity: .5; }
 .invite-copy-section .invite-hint { margin-top: 10px; color: var(--xs-muted); font-size: 11px; line-height: 1.8; }
-.invite-copy-notice { min-height: 22px; color: var(--xs-muted); font-size: 12px; }
+.invite-copy-notice { color: var(--xs-muted); font-size: 12px; line-height: 1.7; }
+.invite-copy-notice:empty { display: none; }
 @media (max-width: 680px) {
   .invite-banner { padding: 19px; flex-direction: column; align-items: stretch; gap: 15px; }
   .invite-banner .xs-button { width: 100%; }
-  .invite-panel { padding: 23px 19px; }
-  .invite-panel h2 { font-size: 19px; }
-  .invite-copy-row { flex-direction: column; align-items: stretch; gap: 11px; }
+  .invite-page { padding-top: 44px; }
+  .invite-page .page-intro { margin-bottom: 28px; }
+  .invite-copy-row { align-items: stretch; }
   .invite-fields { grid-template-columns: 1fr; }
   .invite-sms-actions { flex-direction: column; }
   .invite-sms-actions .xs-button { width: 100%; }

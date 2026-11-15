@@ -264,6 +264,9 @@ for (const item of [
   if (!response?.ok()) failures.push(item.label + ': invite page HTTP ' + response?.status())
   const instructions = page.locator('.invite-panel')
   const content = await instructions.textContent()
+  if (await instructions.getByText('通过短信申请', { exact: true }).count() ||
+      await instructions.getByText('短信由你本人确认发送').count())
+    failures.push(item.label + ': removed explanatory heading remains')
   if (await page.locator('.invite-page .page-intro .eyebrow, .invite-panel-icon').count())
     failures.push(item.label + ': removed invitation label or heading icon remains')
   if (await page.getByText('填写手机号和昵称，通过手机短信向灵仓申请邀请码；可选填一段说明。').count())
@@ -314,15 +317,33 @@ for (const item of [
     buttons: [...document.querySelectorAll('.invite-panel .xs-button')].map(el => ({
       height: Math.round(el.getBoundingClientRect().height), corners: getComputedStyle(el).borderRadius
     })),
-    footer: document.querySelector('.VPFooter .copyright')?.textContent?.trim()
+    footer: document.querySelector('.VPFooter .copyright')?.textContent?.trim(),
+    panel: (() => {
+      const el = document.querySelector('.invite-panel')
+      const heading = document.querySelector('.invite-page h1')
+      const rect = el.getBoundingClientRect()
+      return {
+        width: rect.width, x: rect.x, h1x: heading.getBoundingClientRect().x,
+        borderWidth: getComputedStyle(el).borderTopWidth,
+        boxShadow: getComputedStyle(el).boxShadow,
+        backgroundColor: getComputedStyle(el).backgroundColor
+      }
+    })()
   }))
   if (layout.overflow > 1) failures.push(item.label + ': horizontal overflow')
+  if (layout.panel.width > 562 || Math.abs(layout.panel.x - layout.panel.h1x) > 1)
+    failures.push(item.label + ': form and heading are not aligned')
+  if (layout.panel.borderWidth !== '0px' || layout.panel.boxShadow !== 'none' ||
+      !['rgba(0, 0, 0, 0)', 'transparent'].includes(layout.panel.backgroundColor))
+    failures.push(item.label + ': oversized glass card styling was not removed')
   if (layout.buttons.length !== 2 || layout.buttons.some(b => b.height !== 46 || b.corners !== '12px'))
     failures.push(item.label + ': button styling inconsistent')
   if (layout.footer !== 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.') failures.push(item.label + ': footer missing')
   if (pageErrors.length) failures.push(item.label + ': JS exceptions ' + pageErrors.join(' | '))
   findings.push({ test: 'invite-sms', variant: item.label, bodyCopied: true, ...layout })
   await capture(page, item.label + '.png', true)
+  if (item.label === 'invite-desktop-light' || item.label === 'invite-mobile-light')
+    await printReference(page, item.label)
   await ctx.close()
 }
 // Apple 官方 sms: 协议只保障打开短信并指定收件人：iPhone 应提示先复制内容。
