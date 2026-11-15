@@ -264,6 +264,10 @@ for (const item of [
   if (!response?.ok()) failures.push(item.label + ': invite page HTTP ' + response?.status())
   const instructions = page.locator('.invite-panel')
   const content = await instructions.textContent()
+  if (await page.locator('.invite-page .page-intro .eyebrow, .invite-panel-icon').count())
+    failures.push(item.label + ': removed invitation label or heading icon remains')
+  if (await page.getByText('填写手机号和昵称，通过手机短信向灵仓申请邀请码；可选填一段说明。').count())
+    failures.push(item.label + ': removed top explanatory text remains')
   for (const word of ['昵称', '手机号', '13231226535', '通过短信申请', '可选说明']) {
     if (!content?.includes(word)) failures.push(item.label + ': missing instruction ' + word)
   }

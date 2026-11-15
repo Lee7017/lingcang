@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { MessageSquare, Send, Copy, Check } from 'lucide-vue-next'
+import { Send, Copy, Check } from 'lucide-vue-next'
 
 const recipientPhone = '13231226535'
 const applicationTitle = '灵仓内测邀请码申请'
@@ -69,14 +69,11 @@ function onSmsClick(event: MouseEvent) {
 <template>
   <main class="page-design invite-page section-width">
     <div class="page-intro">
-      <span class="eyebrow">邀请内测</span>
       <h1>申请灵仓内测邀请码</h1>
-      <p>填写手机号和昵称，通过手机短信向灵仓申请邀请码；可选填一段说明。</p>
     </div>
 
     <section class="invite-panel" aria-labelledby="invite-instructions-title">
       <div class="invite-panel-heading">
-        <span class="invite-panel-icon"><MessageSquare :size="24" /></span>
         <div>
           <h2 id="invite-instructions-title">通过短信申请</h2>
           <p>短信由你本人确认发送，官网不会代发短信或收集申请表单。</p>
