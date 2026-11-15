@@ -20,8 +20,11 @@ export const releasePlatforms: ReleasePlatform[] = [
   { name: 'iOS / iPadOS', icon: 'tablet', description: '须符合 Apple 分发要求', format: '实际分发渠道待确定', status: '未开放', url: '', version: '' }
 ]
 
-// 可填写自己的 Releases 页面网址；不要放占位的 OWNER/REPO URL
-export const releasesPageUrl = 'https://github.com/Lee7017/xunshu/releases'
+// 从构建环境读取当前仓库地址，仓库改名后无需更改网站源码。
+// 本地未配置 VITE_GITHUB_REPOSITORY 时，从站点 base 推导仓库名称。
+const repository = import.meta.env.VITE_GITHUB_REPOSITORY
+  || `Lee7017/${import.meta.env.BASE_URL.split('/').filter(Boolean)[0] || 'lingcang'}`
+export const releasesPageUrl = `https://github.com/${repository}/releases`
 
-// 仅用于验证 GitHub Pages 官网到 GitHub Releases 的真实下载流程，不是软件安装包。
-export const testDownloadUrl = 'https://github.com/Lee7017/xunshu/releases/download/test-download-v1/lingcang-test-download.png'
+// 测试链接不是软件安装包。
+export const testDownloadUrl = `${releasesPageUrl}/download/test-download-v1/lingcang-test-download.png`

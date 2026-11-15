@@ -26,6 +26,10 @@ jobs:
           cp docs/public/apple-touch-icon.png lingcang-test-download.png
           if gh release view test-download-v1 >/dev/null 2>&1; then
             gh release upload test-download-v1 lingcang-test-download.png --clobber
+            # 一次性清理旧品牌测试附件，不影响其他发布资产。
+            if gh release view test-download-v1 --json assets --jq '.assets[].name' | grep -Fxq 'xunshu-test-download.png'; then
+              gh release delete-asset test-download-v1 xunshu-test-download.png --yes
+            fi
           else
             gh release create test-download-v1 lingcang-test-download.png \
               --title "下载链路测试（非软件安装包）" \

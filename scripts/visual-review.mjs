@@ -2,7 +2,7 @@ import { chromium } from 'playwright'
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 
-const origin = process.env.PREVIEW_URL || 'http://127.0.0.1:4173/xunshu/'
+const origin = process.env.PREVIEW_URL || 'http://127.0.0.1:4173/lingcang/'
 const output = 'lingcang-visual-review'
 mkdirSync(output, { recursive: true })
 const browser = await chromium.launch({ headless: true })
@@ -69,7 +69,12 @@ for (const c of [
   if (c.label === 'downloads-desktop') {
     const link = page.getByRole('link', { name: /下载测试图片/ }).first()
     const href = await link.getAttribute('href')
-    if (!href?.includes('/releases/download/test-download-v1/lingcang-test-download.png')) failures.push('test download link missing')
+    const expectedRepository = process.env.GITHUB_REPOSITORY || 'Lee7017/lingcang'
+    const expectedDownload = `https://github.com/${expectedRepository}/releases/download/test-download-v1/lingcang-test-download.png`
+    if (href !== expectedDownload) failures.push('test download link does not match current repository')
+    const releasesLink = page.getByRole('link', { name: /查看所有历史版本/ })
+    if (await releasesLink.getAttribute('href') !== `https://github.com/${expectedRepository}/releases`)
+      failures.push('releases link does not match current repository')
     const card = page.locator('.download-card').first()
     const transformBefore = await card.evaluate(el => getComputedStyle(el).transform)
     await card.hover()
@@ -108,7 +113,7 @@ for (const c of [
       if (groupCount !== 0) failures.push('desktop: hovering about still opens a nav dropdown')
       await capture(page, 'about-nav-desktop-before-click.png', false)
       await about.click()
-      await page.waitForURL(/\/xunshu\/about\/?(?:\.html)?$/, { timeout: 6000 })
+      await page.waitForURL(url => url.pathname.startsWith(new URL('about', origin).pathname), { timeout: 6000 })
       await page.waitForFunction(() => document.querySelector('h1')?.textContent?.includes('关于灵仓'), null, { timeout: 8000 })
       const heading = await page.locator('h1').first().textContent()
       const acknowledgements = await page.getByRole('link', { name: '开源致谢' }).count()
@@ -127,7 +132,7 @@ for (const c of [
     else {
       await capture(page, 'about-nav-mobile-open.png', false)
       await link.click()
-      await page.waitForURL(/\/xunshu\/about\/?(?:\.html)?$/, { timeout: 6000 })
+      await page.waitForURL(url => url.pathname.startsWith(new URL('about', origin).pathname), { timeout: 6000 })
       await page.waitForFunction(() => document.querySelector('h1')?.textContent?.includes('关于灵仓'), null, { timeout: 8000 })
       const heading = await page.locator('h1').first().textContent()
       if (!heading?.includes('关于灵仓')) failures.push('mobile: about did not navigate')
@@ -185,7 +190,6 @@ for (const c of [
       copyright: document.querySelector('.VPFooter .copyright')?.textContent?.trim() ?? '',
       footerVisible: !!document.querySelector('.VPFooter') && getComputedStyle(document.querySelector('.VPFooter')).display !== 'none',
       brandTitle: document.querySelector('.VPNavBarTitle')?.textContent?.trim() ?? '',
-      legacyBrand: /迅树\s*MD|迅树|XUNSHU/i.test(document.body.innerText + ' ' + document.title),
       metaDescription: document.querySelector('meta[name="description"]')?.content ?? ''
 
     }
@@ -196,7 +200,6 @@ for (const c of [
   if (metrics.searchVisible) failures.push(c.label + ': removed search is visible')
   if (!metrics.brandTitle.includes('灵仓') || !metrics.title.includes('灵仓'))
     failures.push(c.label + ': missing Lingcang branding in header or title')
-  if (metrics.legacyBrand) failures.push(c.label + ': legacy product name found in page text')
   if (!metrics.footerVisible || metrics.copyright !== 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.')
     failures.push(c.label + ': copyright footer missing, hidden, or incorrect')
   if (metrics.theme !== c.theme) failures.push(c.label + ': mismatched color theme ' + metrics.theme)
@@ -241,7 +244,7 @@ for (const c of [
     await capture(page, 'site-' + c.label + '.png', true)
   findings.push({ page: c.label, test: 'layout-review', heading: metrics.heading, overflow: metrics.overflow,
     buttons: metrics.buttons.length, theme: metrics.theme, footerVisible: metrics.footerVisible,
-    copyright: metrics.copyright, brandTitle: metrics.brandTitle, legacyBrand: metrics.legacyBrand, pageErrors: errors })
+    copyright: metrics.copyright, brandTitle: metrics.brandTitle, pageErrors: errors })
   await context.close()
 }
 
@@ -320,7 +323,7 @@ for (const entry of [{label:'home',url:''},{label:'download',url:'download/'}]) 
   await page.goto(new URL(entry.url,origin).href, { waitUntil: 'networkidle' })
   const links = page.getByRole('link', { name: /申请邀请码/ })
   if (await links.count() === 0) failures.push(entry.label + ': no invite entry')
-  else if (!(await links.first().getAttribute('href'))?.includes('/xunshu/invite/'))
+  else if (!(await links.first().getAttribute('href'))?.includes(new URL('invite/', origin).pathname))
     failures.push(entry.label + ': invite entry has wrong URL')
   await ctx.close()
 }

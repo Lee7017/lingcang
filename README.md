@@ -103,11 +103,13 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 
 正式上线前，还需要核对实际发布版本、准确截图、第三方许可证、项目正式 GitHub 仓库名、DNS 及所有平台下载链接。
 
-## 品牌名称与现有网址
+## 品牌名称与仓库改名
 
-- 产品中文名统一使用「灵仓」，需要英文名称时统一使用 **LINGCANG**。
-- 仓库仍为 `Lee7017/xunshu`，官网仍为 `https://lee7017.github.io/xunshu/`。这里的 `xunshu` 是现有仓库名与网站路径，为维持已发布链接暂不更改，不再用作官网产品名称。
-- 网站图标保留已有图形，仅将描述和无障碍名称更新为「灵仓」；如果日后更换品牌图标，应同时替换 `docs/public/logo.svg` 和 `docs/public/apple-touch-icon.png`。
+- 产品中文名是 **灵仓**，英文名称为 **LINGCANG**；官网不再使用旧品牌名称。
+- GitHub 仓库管理员可以在仓库 Settings → General 中将仓库重命名为 `lingcang`。
+- 网站发布工作流依据 `github.event.repository.name` 自动设置 Pages 路径；下载页面通过构建时的 `VITE_GITHUB_REPOSITORY` 自动生成 GitHub Releases 链接。仓库重命名后重新运行 Pages 部署与浏览器审核，无须在源代码中逐一替换路径。
+- GitHub 不会自动重定向改名前的 GitHub Pages 项目站点 URL，外部分享的旧网址需要更换。
+- 当前图形标识为已有资源；如要重新设计品牌图标，需同时更新 `docs/public/logo.svg` 与 `docs/public/apple-touch-icon.png`。
 
 ## 构建与浏览器检查
 

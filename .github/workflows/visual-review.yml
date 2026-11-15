@@ -30,19 +30,21 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Build preview with Pages base path
         env:
-          SITE_BASE: /xunshu/
+          SITE_BASE: /${{ github.event.repository.name }}/
+          VITE_GITHUB_REPOSITORY: ${{ github.repository }}
         run: npm run build
       - name: Screenshot and inspect site
         shell: bash
         env:
-          PREVIEW_URL: http://127.0.0.1:4173/xunshu/
+          SITE_BASE: /${{ github.event.repository.name }}/
+          PREVIEW_URL: http://127.0.0.1:4173/${{ github.event.repository.name }}/
         run: |
           set -euo pipefail
-          mkdir -p /tmp/xunshu-site-preview/xunshu
-          cp -a docs/.vitepress/dist/. /tmp/xunshu-site-preview/xunshu/
-          python3 -m http.server 4173 --bind 127.0.0.1 --directory /tmp/xunshu-site-preview > /tmp/xunshu-preview.log 2>&1 &
+          mkdir -p "/tmp/lingcang-site-preview${SITE_BASE}"
+          cp -a docs/.vitepress/dist/. "/tmp/lingcang-site-preview${SITE_BASE}"
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory /tmp/lingcang-site-preview > /tmp/lingcang-preview.log 2>&1 &
           for i in {1..30}; do
-            if curl -fsS -o /dev/null http://127.0.0.1:4173/xunshu/; then break; fi
+            if curl -fsS -o /dev/null "${PREVIEW_URL}"; then break; fi
             sleep 1
           done
           node scripts/visual-review.mjs
