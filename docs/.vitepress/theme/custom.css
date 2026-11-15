@@ -548,13 +548,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   }
 }
 
-/* 灵仓软件图标：使用用户提供的原始标识 */
+/* 灵仓软件图标：黑底白色灵光 */
 .hero-app-logo {
   display: block;
   width: 112px;
   height: 112px;
   border-radius: 24px;
-  background: #fff;
+  background: #000;
   box-shadow: 0 14px 35px rgba(15, 17, 22, .09), 0 0 0 1px rgba(25, 29, 35, .05);
 }
 @media (max-width: 640px) {
