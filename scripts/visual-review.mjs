@@ -207,24 +207,12 @@ for (const c of [
     if (b.radius !== '12px') failures.push(c.label + ': button corner radius inconsistent: ' + b.text + '=' + b.radius)
   }
   if (c.label.startsWith('home')) {
-    const cta = page.locator('.final-cta')
-    const buttons = cta.locator('.hero-actions .xs-button')
-    const count = await buttons.count()
-    if (count !== 3) failures.push(c.label + ': expected 3 CTA buttons, got ' + count)
-    else {
-      const rects = await buttons.evaluateAll(els => els.map(el => {
-        const rect = el.getBoundingClientRect()
-        return { label: el.textContent?.trim(), width: rect.width, height: rect.height, x: rect.left, y: rect.top, radius: getComputedStyle(el).borderRadius }
-      }))
-      const widths = rects.map(x => x.width)
-      if (Math.max(...widths) - Math.min(...widths) > 2) failures.push(c.label + ': CTA button widths are inconsistent')
-      if (c.width > 680 && Math.max(...rects.map(x => x.y)) - Math.min(...rects.map(x => x.y)) > 2)
-        failures.push(c.label + ': CTA buttons are not aligned horizontally')
-      if (c.width <= 390 && Math.max(...rects.map(x => x.x)) - Math.min(...rects.map(x => x.x)) > 2)
-        failures.push(c.label + ': mobile CTA buttons are not aligned vertically')
-      findings.push({ page: c.label, test: 'cta-alignment', buttons: rects })
-      await cta.screenshot({ path: path.join(output, c.label + '-final-cta.png'), animations: 'disabled' })
-    }
+    if (await page.locator('.final-cta').count())
+      failures.push(c.label + ': obsolete home final CTA still exists')
+    if (await page.getByText('开始使用灵仓', { exact: true }).count())
+      failures.push(c.label + ': obsolete bottom CTA heading still exists')
+    if (await page.locator('.landing-hero .hero-actions a').count() !== 2)
+      failures.push(c.label + ': primary home download/demo links are missing')
   }
   if (c.label === 'download-dark-desktop') {
     const cards = page.locator('.download-card')
@@ -483,6 +471,92 @@ for (const entry of [{label:'home',url:''},{label:'download',url:'download/'}]) 
   }
   if (errors.length) failures.push('faq: JS exceptions: ' + errors.join(' | '))
   await context.close()
+}
+
+// 手机端文档两种目录：检查导航/侧栏/下拉内容使用统一不透明颜色，
+// 并验证原生菜单仍可正常开关。额外检查全站返回顶部按钮。
+for (const width of [320, 390, 768]) {
+  for (const theme of ['light', 'dark']) {
+    const ctx = await browser.newContext({
+      viewport: { width, height: 844 }, isMobile: width < 500,
+      hasTouch: width < 500, colorScheme: theme
+    })
+    const page = await ctx.newPage()
+    const errors = []
+    page.on('pageerror', err => errors.push(err.message))
+    await page.goto(new URL('guide/', origin).href, { waitUntil: 'networkidle' })
+    await page.evaluate(() => document.fonts.ready)
+    const localNav = page.locator('.VPLocalNav')
+    const sidebar = page.locator('.VPSidebar')
+    const menu = localNav.locator('button.menu')
+    const outline = page.locator('.VPLocalNavOutlineDropdown > button')
+    if (!(await menu.isVisible()) || !(await outline.isVisible()))
+      failures.push(width + '/' + theme + ': directory or page-outline toggle not visible')
+    const colors = await page.evaluate(() => {
+      const color = selector => {
+        const el = document.querySelector(selector)
+        return el && getComputedStyle(el).backgroundColor
+      }
+      return {
+        navbar: color('.VPNavBar.has-sidebar'),
+        localNav: color('.VPLocalNav'),
+        sidebar: color('.VPSidebar'),
+        text: getComputedStyle(document.querySelector('.VPLocalNav button.menu')).color,
+        overflow: Math.max(0, document.documentElement.scrollWidth - innerWidth)
+      }
+    })
+    if (new Set([colors.navbar, colors.localNav, colors.sidebar]).size !== 1 ||
+        !colors.localNav?.startsWith('rgb('))
+      failures.push(width + '/' + theme + ': mobile document nav colors differ or transparent ' + JSON.stringify(colors))
+    if (colors.overflow > 1) failures.push(width + '/' + theme + ': horizontal overflow ' + colors.overflow)
+    await outline.click()
+    const items = page.locator('.VPLocalNavOutlineDropdown .items')
+    await items.waitFor({ state: 'visible' })
+    const dropdownColors = await items.evaluate(el => {
+      const color = node => getComputedStyle(node).backgroundColor
+      return { outer: color(el), header: color(el.querySelector('.header')),
+        outline: color(el.querySelector('.outline')) }
+    })
+    if (new Set(Object.values(dropdownColors).concat(colors.localNav)).size !== 1)
+      failures.push(width + '/' + theme + ': outline menu surfaces do not match ' + JSON.stringify(dropdownColors))
+    await capture(page, 'doc-nav-outline-' + theme + '-' + width + '.png', false)
+    await outline.click()
+    await menu.click()
+    if (!(await sidebar.evaluate(el => el.classList.contains('open'))))
+      failures.push(width + '/' + theme + ': sidebar did not open')
+    await page.waitForTimeout(300)
+    await capture(page, 'doc-nav-sidebar-' + theme + '-' + width + '.png', false)
+    // 关闭侧栏，再检测滚动后的返回顶部
+    await menu.click()
+    await page.evaluate(() => window.scrollTo({ top: 1100, behavior: 'instant' }))
+    await page.waitForTimeout(200)
+    const back = page.getByRole('button', { name: '返回顶部' })
+    if (!(await back.isVisible())) failures.push(width + '/' + theme + ': missing back-to-top arrow after scroll')
+    else {
+      await back.click()
+      await page.waitForFunction(() => window.scrollY < 5, { timeout: 7000 })
+      if (await back.count()) failures.push(width + '/' + theme + ': back-to-top arrow did not hide at top')
+    }
+    if (errors.length) failures.push(width + '/' + theme + ': JS errors ' + errors.join(' | '))
+    findings.push({ test: 'doc-mobile-menu-and-top', width, theme, colors, dropdownColors })
+    await ctx.close()
+  }
+}
+// 首页也应能使用返回顶部按钮；删除底部 CTA 后检查首页跳转动作保持有效。
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
+  const page = await ctx.newPage()
+  await page.goto(origin, { waitUntil: 'networkidle' })
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
+  await page.waitForTimeout(250)
+  const back = page.getByRole('button', { name: '返回顶部' })
+  if (!(await back.isVisible())) failures.push('home: back-to-top arrow missing at bottom')
+  else {
+    await capture(page, 'home-bottom-with-back-to-top-mobile.png', false)
+    await back.click()
+    await page.waitForFunction(() => window.scrollY < 5, { timeout: 7000 })
+  }
+  await ctx.close()
 }
 
 const reduced = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: 'reduce' })

@@ -435,10 +435,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .super-cards span, .super-document small { font-size: 11px; color: var(--xs-muted); }
 .formats { display: flex; flex-wrap: wrap; gap: 7px; }
 .formats span { display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; border-radius: 9px; color: var(--xs-muted); background: var(--xs-soft); border: 1px solid var(--xs-border); font-size: 11px; }
-.final-cta { text-align: center; padding: 84px 20px 96px; border-top: 1px solid var(--xs-rule); display: flex; flex-direction: column; align-items: center; gap: 18px; }
-.final-cta h2 { font-size: clamp(31px,3.6vw,46px); font-weight: 780; }
-.final-cta p { color: var(--xs-muted); margin-bottom: 6px; font-size: 15px; line-height: 1.9; }
-.final-cta .hero-actions { margin-top: 6px; }
 .mobile-only { display: none; }
 
 /* 下载、在线体验、截图 */
@@ -546,8 +542,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   .sync-device svg { width: 30px; }
   .sync-connection { margin-top: 19px; }
   .visual-caption { font-size: 10px; }
-  .final-cta { padding: 64px 18px 76px; }
-  .final-cta p { font-size: 13px; }
   .hero-actions { width: min(100%, 320px); flex-direction: column; gap: 10px; }
   .hero-actions .xs-button { width: 100%; min-width: 0; }
   .subpage-actions { width: min(100%, 360px); margin: 0 auto; flex-direction: column; }
@@ -701,12 +695,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 
 
 /* 邀请码申请：简洁表单布局，不使用大块玻璃卡片。 */
-.hero-invite-link, .final-invite-link {
+.hero-invite-link {
   color: var(--xs-muted);
   font-size: 12px;
   line-height: 1.8;
 }
-.hero-invite-link a, .final-invite-link a {
+.hero-invite-link a {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -715,8 +709,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.hero-invite-link a:hover, .final-invite-link a:hover { text-decoration-thickness: 2px; }
-.hero-invite-link a svg, .final-invite-link a svg { flex: none; }
+.hero-invite-link a:hover { text-decoration-thickness: 2px; }
+.hero-invite-link a svg { flex: none; }
 .invite-banner {
   max-width: 910px;
   margin: 0 auto 24px;
@@ -827,4 +821,101 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   .invite-sms-actions .xs-button svg { width: 15px; height: 15px; }
   .invite-copy-section .invite-hint { margin-top: 8px; }
   .invite-copy-notice { font-size: 11px; }
+}
+
+
+/* 移动端文档导航：与系统主题统一使用不透明底色。
+   VitePress 的默认下拉菜单含半透明 panel，避免叠加页面背景造成混色。 */
+@media (max-width: 959px) {
+  .VPNavBar.has-sidebar,
+  .VPLocalNav,
+  .VPSidebar,
+  .VPLocalNavOutlineDropdown .items,
+  .VPLocalNavOutlineDropdown .items .header,
+  .VPLocalNavOutlineDropdown .items .outline {
+    background: var(--vp-c-bg-elv) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .VPNavBar.has-sidebar {
+    box-shadow: none;
+    border-bottom-color: var(--vp-c-divider);
+  }
+  .VPLocalNav {
+    border-bottom: 1px solid var(--vp-c-divider);
+    box-shadow: none;
+  }
+  .VPLocalNav .menu,
+  .VPLocalNav .VPLocalNavOutlineDropdown > button {
+    color: var(--vp-c-text-1);
+    font-size: 13px;
+    font-weight: 600;
+    transition: none;
+  }
+  .VPLocalNav .menu-icon,
+  .VPLocalNav .VPLocalNavOutlineDropdown .icon {
+    color: var(--vp-c-text-2);
+  }
+  .VPSidebar {
+    border-right: 1px solid var(--vp-c-divider);
+    box-shadow: 8px 0 24px rgba(0, 0, 0, .08);
+  }
+  .VPSidebarItem.is-active > .item .link {
+    background: var(--vp-c-bg-alt) !important;
+  }
+  .VPLocalNavOutlineDropdown .items {
+    gap: 0;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 8px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, .12);
+  }
+  .VPLocalNavOutlineDropdown .items .header {
+    border-bottom: 1px solid var(--vp-c-divider);
+  }
+  .VPLocalNavOutlineDropdown .items .top-link {
+    color: var(--vp-c-text-1);
+    font-size: 13px;
+  }
+  .VPLocalNavOutlineDropdown .items .outline-link {
+    color: var(--vp-c-text-2);
+  }
+  .VPLocalNavOutlineDropdown .items .outline-link.active {
+    color: var(--vp-c-text-1);
+    font-weight: 650;
+  }
+}
+
+/* 全站返回顶部：滚动后出现，不占用页脚内容和文档目录空间。 */
+.xs-back-to-top {
+  position: fixed;
+  right: 22px;
+  bottom: 26px;
+  z-index: 35;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg-elv);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.xs-back-to-top:hover { background: var(--vp-c-bg-alt); }
+.xs-back-to-top:focus-visible {
+  outline: 2px solid var(--vp-c-text-1);
+  outline-offset: 3px;
+}
+@media (max-width: 680px) {
+  .xs-back-to-top {
+    right: 16px;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+  }
 }

@@ -5,7 +5,7 @@ import {
   NotebookPen, HardDrive, Monitor, Tablet, Smartphone, Network, FileAudio,
   FileVideo, FileSpreadsheet, Presentation, FileType, PencilLine, Check,
   ChevronDown, ChevronRight, PanelLeft, MoreHorizontal, CheckSquare,
-  Circle, FilePlus2, FolderPlus, Layers3, Maximize2, Square, BookOpen
+  Circle, FilePlus2, FolderPlus, Layers3, Maximize2, Square
 } from 'lucide-vue-next'
 </script>
 
@@ -137,16 +137,5 @@ import {
       </div>
     </section>
 
-    <section class="final-cta section-width">
-      <span class="eyebrow">从这里开始</span>
-      <h2>开始使用灵仓</h2>
-      <p>下载软件，或者在浏览器中探索交互界面。</p>
-      <div class="hero-actions">
-        <a class="xs-button primary" :href="withBase('/download/')"><Download :size="17"/>软件下载</a>
-        <a class="xs-button secondary" :href="withBase('/demo/')"><Play :size="17"/>在线体验</a>
-        <a class="xs-button secondary" :href="withBase('/guide/')"><BookOpen :size="17"/>阅读教程</a>
-      </div>
-      <p class="final-invite-link">需要内测资格？<a :href="withBase('/invite/')">申请邀请码 <ArrowRight :size="14" /></a></p>
-    </section>
   </main>
 </template>
