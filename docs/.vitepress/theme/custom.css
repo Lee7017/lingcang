@@ -108,7 +108,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
    Match the document-sidebar navbar to the same coordinate system. */
 @media (min-width: 1440px) {
   .VPNavBar.has-sidebar .container > .content {
-    padding-right: calc((100% - var(--vp-layout-max-width)) / 2 + 32px);
+    padding-right: max(32px, calc((100% - var(--vp-layout-max-width)) / 2 + 32px));
   }
 }
 .VPNavBarTitle .title { font-weight: 780; letter-spacing: -.035em; }

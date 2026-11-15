@@ -15,7 +15,7 @@ const routes = [
   { title: '更新日志', path: 'changelog/', slug: 'changelog' },
   { title: '关于', path: 'about/', slug: 'about' }
 ]
-const widths = [390, 768, 960, 1024, 1280, 1440, 1650, 1920]
+const widths = [390, 768, 960, 1024, 1280, 1440, 1450, 1456, 1650, 1920]
 const failures = []
 const results = []
 const browser = await chromium.launch({ headless: true })
