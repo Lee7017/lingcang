@@ -531,7 +531,7 @@ for (const width of [320, 390, 768]) {
     await page.waitForFunction(() => !document.querySelector('.VPSidebar')?.classList.contains('open'))
     await page.evaluate(() => window.scrollTo({ top: 1100, behavior: 'instant' }))
     await page.waitForTimeout(200)
-    const back = page.getByRole('button', { name: '返回顶部' })
+    const back = page.locator('.xs-back-to-top')
     if (!(await back.isVisible())) failures.push(width + '/' + theme + ': missing back-to-top arrow after scroll')
     else {
       await back.click()
@@ -550,7 +550,7 @@ for (const width of [320, 390, 768]) {
   await page.goto(origin, { waitUntil: 'networkidle' })
   await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
   await page.waitForTimeout(250)
-  const back = page.getByRole('button', { name: '返回顶部' })
+  const back = page.locator('.xs-back-to-top')
   if (!(await back.isVisible())) failures.push('home: back-to-top arrow missing at bottom')
   else {
     await capture(page, 'home-bottom-with-back-to-top-mobile.png', false)

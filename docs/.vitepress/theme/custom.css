@@ -845,6 +845,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
     border-bottom: 1px solid var(--vp-c-divider);
     box-shadow: none;
   }
+  /* 没有章节时，VitePress 会把「本页目录」替换为文字版「返回顶部」。
+     已有全站向上箭头，手机端隐藏重复文字按钮。 */
+  .VPLocalNavOutlineDropdown > button:not(:has(.menu-text)) {
+    display: none;
+  }
   .VPLocalNav .menu,
   .VPLocalNav .VPLocalNavOutlineDropdown > button {
     color: var(--vp-c-text-1);
