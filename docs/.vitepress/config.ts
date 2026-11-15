@@ -13,6 +13,7 @@ export default defineConfig({
   lastUpdated: true,
   ...(process.env.SITE_URL ? { sitemap: { hostname: process.env.SITE_URL } } : {}),
   head: [
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${base}favicon-32x32.png` }],
     ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}logo.svg` }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${base}apple-touch-icon.png` }],
     ['meta', { name: 'theme-color', content: '#f1f2f5' }],
