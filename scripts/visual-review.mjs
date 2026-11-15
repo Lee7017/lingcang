@@ -271,7 +271,7 @@ for (const item of [
     failures.push(item.label + ': removed invitation label or heading icon remains')
   if (await page.getByText('填写手机号和昵称，通过手机短信向灵仓申请邀请码；可选填一段说明。').count())
     failures.push(item.label + ': removed top explanatory text remains')
-  for (const word of ['昵称', '手机号', '13231226535', '通过短信申请', '可选说明']) {
+  for (const word of ['昵称', '手机号', '13231226535', '可选说明']) {
     if (!content?.includes(word)) failures.push(item.label + ': missing instruction ' + word)
   }
   if (await instructions.locator('[data-mailto], a[href^="mailto:"], input[type="email"]').count())
