@@ -469,8 +469,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .download-action { width: 100%; min-height: 46px; }
 .download-note { max-width: 910px; margin: 24px auto 0; border-radius: 20px; padding: 27px; display: flex; gap: 16px; align-items: flex-start; }
 .download-note > div { flex: 1; min-width: 0; }
-.test-download-note { margin-bottom: 0; }
-.download-test-action { margin-top: 16px; min-width: 185px; }
 .download-note strong { font-size: 14px; }
 .download-note p { margin-top: 9px; color: var(--xs-muted); font-size: 12px; line-height: 1.85; }
 .download-note .text-link { margin-top: 10px; }
@@ -554,7 +552,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   .hero-actions .xs-button { width: 100%; min-width: 0; }
   .subpage-actions { width: min(100%, 360px); margin: 0 auto; flex-direction: column; }
   .subpage-actions .xs-button { width: 100%; min-width: 0; }
-  .download-test-action { width: 100%; min-width: 0; }
   .page-design { padding: 43px 17px 75px; }
   .page-intro { margin-bottom: 34px; }
   .page-intro p { font-size: 13px; }

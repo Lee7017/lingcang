@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { withBase } from 'vitepress'
-import { Download, Monitor, Smartphone, Laptop, Tablet, Github, ShieldCheck, Info, ArrowRight } from 'lucide-vue-next'
-import { releasePlatforms, releasesPageUrl, testDownloadUrl } from '../data/releases'
+import { Download, Monitor, Smartphone, Laptop, Tablet, Github, ShieldCheck, ArrowRight } from 'lucide-vue-next'
+import { releasePlatforms, releasesPageUrl } from '../data/releases'
 const iconMap = { monitor: Monitor, smartphone: Smartphone, laptop: Laptop, tablet: Tablet }
 </script>
 
@@ -28,14 +28,6 @@ const iconMap = { monitor: Monitor, smartphone: Smartphone, laptop: Laptop, tabl
         <a v-if="item.status === '已发布' && item.url" class="xs-button primary download-action" :href="item.url" target="_blank" rel="noopener noreferrer"><Download :size="16"/>下载 {{ item.name }}</a>
         <span v-else class="xs-button disabled download-action" aria-disabled="true">尚未开放下载</span>
       </article>
-    </div>
-    <div class="download-note test-download-note">
-      <Info :size="23"/>
-      <div>
-        <strong>下载链路测试 · PNG 图片</strong>
-        <p>这是用于测试官网下载是否正常的灵仓软件图标，不是真实安装包。点击下方按钮将从 GitHub Releases 下载 PNG 文件。</p>
-        <a class="xs-button secondary download-test-action" :href="testDownloadUrl" target="_blank" rel="noopener noreferrer"><Download :size="16"/>下载测试图片（PNG）</a>
-      </div>
     </div>
     <div class="download-note">
       <Github :size="23"/>

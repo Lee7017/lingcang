@@ -67,11 +67,9 @@ for (const c of [
     findings.push({ component: 'primary-hover', before, after })
   }
   if (c.label === 'downloads-desktop') {
-    const link = page.getByRole('link', { name: /下载测试图片/ }).first()
-    const href = await link.getAttribute('href')
     const expectedRepository = process.env.GITHUB_REPOSITORY || 'Lee7017/lingcang'
-    const expectedDownload = `https://github.com/${expectedRepository}/releases/download/test-download-v1/lingcang-test-download.png`
-    if (href !== expectedDownload) failures.push('test download link does not match current repository')
+    if (await page.getByText('下载链路测试 · PNG 图片').count()) failures.push('removed test-download block is still visible')
+    if (await page.getByRole('link', { name: /下载测试图片/ }).count()) failures.push('removed test-download link is still visible')
     const releasesLink = page.getByRole('link', { name: /查看所有历史版本/ })
     if (await releasesLink.getAttribute('href') !== `https://github.com/${expectedRepository}/releases`)
       failures.push('releases link does not match current repository')
@@ -81,7 +79,7 @@ for (const c of [
     await page.waitForTimeout(220)
     const transformAfter = await card.evaluate(el => getComputedStyle(el).transform)
     if (transformBefore !== transformAfter) failures.push('non-clickable download card moves on hover')
-    findings.push({ component: 'download-card', transformBefore, transformAfter, href })
+    findings.push({ component: 'download-card', transformBefore, transformAfter })
     await capture(page, 'downloads-hover-desktop.png')
   }
   // 删除搜索后，不应出现搜索按钮、搜索弹窗或有宽度的搜索占位。
@@ -236,7 +234,6 @@ for (const c of [
     })))
     if (Math.abs(heights[0] - heights[1]) > 2 || Math.abs(actionRects[0].y - actionRects[1].y) > 2)
       failures.push('download-desktop: card actions not aligned')
-    if (await page.locator('.test-download-note [style]').count()) failures.push('download: inline style remains on test download section')
     findings.push({ page: c.label, test: 'download-card-alignment', heights, actionRects })
   }
   if (['home-dark-desktop','home-light-mobile','download-dark-desktop','demo-dark-desktop',

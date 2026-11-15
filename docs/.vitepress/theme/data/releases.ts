@@ -26,5 +26,3 @@ const repository = import.meta.env.VITE_GITHUB_REPOSITORY
   || `Lee7017/${import.meta.env.BASE_URL.split('/').filter(Boolean)[0] || 'lingcang'}`
 export const releasesPageUrl = `https://github.com/${repository}/releases`
 
-// 测试链接不是软件安装包。
-export const testDownloadUrl = `${releasesPageUrl}/download/test-download-v1/lingcang-test-download.png`
