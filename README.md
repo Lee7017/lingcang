@@ -8,14 +8,14 @@
 
 - 默认浅色；保留完整的黑白深色变量，VitePress 原生外观切换仍可使用。
 - 为阅读提供清晰对比度；代码块和教程正文不做过度透明。
-- 支持较小屏幕和系统减少动画设置；不改变页面路径、文章目录、版本导航和搜索。
+- 支持较小屏幕和系统减少动画设置；保持页面路径、文章目录和版本导航不变。网站搜索入口已按需求移除。
 - 样式集中在 `docs/.vitepress/theme/custom.css`，详细规则见 `DESIGN-GLASS.md`。
 
 ## 设计与边界
 
 - **顶部导航**：首页、下载、使用文档、在线体验、更新日志、关于（包含开源致谢和第三方许可证）。
 - **独立侧边栏**：使用文档显示教程目录；更新日志显示按年份和版本整理的版本导航。首页、下载、在线体验、关于等页面不显示左侧栏。
-- **没有网站级 Footer**，也不开发自定义页脚。教程上一篇／下一篇属于文档阅读导航。
+- **全站版权页脚**：使用 VitePress 原生 Footer，显示 `Copyright © 2026 灵仓（LINGCANG）. All rights reserved.`；教程上一篇／下一篇属于独立的文档导航。
 - **首页三个重点**：局域网 P2P 同步；首页文件树；Super MarkDown（手写/音视频/Office/PDF，Office 仅渲染）。
 - **唯一下载来源**：GitHub Releases。没有 123 云盘备用下载或公开分享。
 - **123 云盘**：仅作为软件内云端同步的未来规划，未实现时不宣传为已支持。
@@ -83,7 +83,7 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 3. 将模板中的版本号、日期、新增、改进、修复替换为实际信息。
 4. 重新构建或部署，侧栏自动识别新文件，不需要在 `config.ts` 手动添加链接。
 
-版本说明页面使用默认右侧文章目录；更新日志首页保留 `aside: false`，只显示左侧版本导航。官网依旧不显示网站级 Footer。
+版本说明页面使用默认右侧文章目录；更新日志首页保留 `aside: false`，只显示左侧版本导航。所有页面底部统一显示版权声明。
 
 ## 内容维护
 
@@ -93,7 +93,7 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 | 样式与响应式 | `docs/.vitepress/theme/custom.css` |
 | 下载卡片 | `docs/.vitepress/theme/components/DownloadCards.vue` |
 | Release 下载地址和状态 | `docs/.vitepress/theme/data/releases.ts` |
-| 顶部导航、文档目录、搜索 | `docs/.vitepress/config.ts` |
+| 顶部导航、文档目录、站点标题和版权声明 | `docs/.vitepress/config.ts` |
 | 使用文档 | `docs/guide/*.md` |
 | 更新日志首页 | `docs/changelog/index.md` |
 | 版本发布说明 | `docs/changelog/releases/YYYY-MM-DD-v版本号.md` |
@@ -103,6 +103,14 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 
 正式上线前，还需要核对实际发布版本、准确截图、第三方许可证、项目正式 GitHub 仓库名、DNS 及所有平台下载链接。
 
-## 本版检查情况
+## 品牌名称与现有网址
 
-本次已完成 CSS 规则解析、仓库内部文件与相对链接检查、GitHub Pages 工作流静态检查和 ZIP 校验。由于当前环境访问 npm registry 时出现 DNS 错误，**未执行 `vitepress build` 或浏览器中的真实 Vue 页面联调**；请在可联网的开发机执行 `npm install && npm run build`，再用 `npm run dev` 检查实际界面和手机宽度。
+- 产品中文名统一使用「灵仓」，需要英文名称时统一使用 **LINGCANG**。
+- 仓库仍为 `Lee7017/xunshu`，官网仍为 `https://lee7017.github.io/xunshu/`。这里的 `xunshu` 是现有仓库名与网站路径，为维持已发布链接暂不更改，不再用作官网产品名称。
+- 网站图标保留已有图形，仅将描述和无障碍名称更新为「灵仓」；如果日后更换品牌图标，应同时替换 `docs/public/logo.svg` 和 `docs/public/apple-touch-icon.png`。
+
+## 构建与浏览器检查
+
+- GitHub Actions 在推送 `main` 后执行 VitePress 构建及 Pages 部署。
+- `.github/workflows/visual-review.yml` 使用 Playwright + Chromium 进行桌面/手机、浅色/深色、导航、按钮、邀请码复制等回归检查，并保存截图。
+- 下载页的 `lingcang-test-download.png` 只是测试图片，不是正式安装包。
