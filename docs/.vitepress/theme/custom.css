@@ -103,6 +103,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   background: transparent !important;
 }
 .VPNavBar .content { border-bottom-color: transparent !important; }
+/* With scrollbar-gutter: stable, 100vw includes the reserved scrollbar,
+   while the normal navbar is centered within the available page width.
+   Match the document-sidebar navbar to the same coordinate system. */
+@media (min-width: 1440px) {
+  .VPNavBar.has-sidebar .container > .content {
+    padding-right: calc((100% - var(--vp-layout-max-width)) / 2 + 32px);
+  }
+}
 .VPNavBarTitle .title { font-weight: 780; letter-spacing: -.035em; }
 .VPNavBarMenuLink, .VPNavBarMenuGroup .text { font-size: 13px; font-weight: 600; }
 .VPNavBarMenuLink.active { font-weight: 600; }
