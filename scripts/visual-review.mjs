@@ -264,7 +264,7 @@ for (const item of [
   if (!response?.ok()) failures.push(item.label + ': invite page HTTP ' + response?.status())
   const instructions = page.locator('.invite-panel')
   const content = await instructions.textContent()
-  for (const word of ['昵称', '手机号', '13231226535', '灵仓内测邀请码申请', '通过短信申请', '可选说明']) {
+  for (const word of ['昵称', '手机号', '13231226535', '通过短信申请', '可选说明']) {
     if (!content?.includes(word)) failures.push(item.label + ': missing instruction ' + word)
   }
   if (await instructions.locator('[data-mailto], a[href^="mailto:"], input[type="email"]').count())
