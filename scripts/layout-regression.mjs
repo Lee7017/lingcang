@@ -62,6 +62,7 @@ try {
             label: el.textContent?.trim(), ...rect(el), weight: getComputedStyle(el).fontWeight
           })),
           logo: rect(document.querySelector('.VPNavBarTitle')),
+          sidebar: rect(document.querySelector('.VPSidebar')),
           card: rect(document.querySelector('.VPDoc .content-container') || document.querySelector('.page-design')),
           aside: rect(document.querySelector('.VPDocAside')),
           h1: document.querySelector('h1')?.textContent?.trim()
@@ -72,6 +73,21 @@ try {
       if (!measure.h1) failures.push(width + '/' + route.slug + ': missing H1')
       if (measure.card && (measure.card.x < -2 || measure.card.right > width + 2)) {
         failures.push(width + '/' + route.slug + ': content outside viewport ' + JSON.stringify(measure.card))
+      }
+      // 大屏必须有效利用横向空间，不能仅仅以「无横向滚动条」作为合格标准。
+      if (width >= 1650 && route.slug === 'guide') {
+        if (!measure.card || measure.card.width < 820) {
+          failures.push(width + '/guide: document content still too narrow ' + JSON.stringify(measure.card))
+        }
+        if (!measure.sidebar || measure.sidebar.right > 350) {
+          failures.push(width + '/guide: excessive left-side empty space ' + JSON.stringify(measure.sidebar))
+        }
+        if (!measure.aside || width - measure.aside.right > (width === 1650 ? 155 : 200)) {
+          failures.push(width + '/guide: excessive right-side empty space ' + JSON.stringify(measure.aside))
+        }
+      }
+      if (width >= 1650 && route.slug === 'about' && (!measure.card || measure.card.width < 820)) {
+        failures.push(width + '/about: unsided document still too narrow ' + JSON.stringify(measure.card))
       }
       if (!mobile && measure.nav.length) {
         if (!baseline) baseline = measure.nav

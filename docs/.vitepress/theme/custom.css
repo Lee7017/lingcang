@@ -155,6 +155,31 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .VPSidebarItem .link:hover { background: var(--xs-frost); }
 .VPSidebarItem.is-active > .item .link { background: var(--xs-frost-strong); }
 .VPSidebarItem.is-active > .item .text { color: var(--xs-ink); font-weight: 720; }
+/* 大屏正文：让文档布局最大利用约 1800px 的视口空间。
+   VitePress 默认 1440px 的布局上限与 688px 的正文上限叠加，
+   导致宽屏时左右空白明显；小屏保留 VitePress 原生布局。 */
+@media (min-width: 1440px) {
+  :root {
+    --vp-layout-max-width: min(100vw, 1800px);
+  }
+
+  /* 左侧目录与右侧文章目录仍由 VitePress 管理，正文释放宽度。 */
+  .VPDoc.has-sidebar.has-aside .content-container {
+    max-width: 920px;
+  }
+  .VPDoc.has-sidebar:not(.has-aside) .content-container {
+    max-width: 1040px;
+  }
+
+  /* 关于、致谢等无侧边栏文档也避免在大屏始终只有窄窄一条。 */
+  .VPDoc:not(.has-sidebar) > .container {
+    max-width: 1240px;
+  }
+  .VPDoc:not(.has-sidebar) > .container > .content {
+    max-width: 1040px;
+  }
+}
+
 .VPDoc .content-container {
   padding: 34px 38px 40px;
   border-radius: 20px;
