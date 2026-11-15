@@ -520,12 +520,14 @@ for (const width of [320, 390, 768]) {
     if (new Set(Object.values(dropdownColors).concat(colors.localNav)).size !== 1)
       failures.push(width + '/' + theme + ': outline menu surfaces do not match ' + JSON.stringify(dropdownColors))
     await capture(page, 'doc-nav-outline-' + theme + '-' + width + '.png', false)
+    if (width === 390) await printReference(page, 'doc-nav-outline-' + theme + '-390')
     await outline.click()
     await menu.click()
     if (!(await sidebar.evaluate(el => el.classList.contains('open'))))
       failures.push(width + '/' + theme + ': sidebar did not open')
     await page.waitForTimeout(300)
     await capture(page, 'doc-nav-sidebar-' + theme + '-' + width + '.png', false)
+    if (width === 390 && theme === 'light') await printReference(page, 'doc-nav-sidebar-light-390')
     // 移动目录抽屉会覆盖顶部按钮：使用 VitePress 原生 Esc 交互关闭。
     await page.keyboard.press('Escape')
     await page.waitForFunction(() => !document.querySelector('.VPSidebar')?.classList.contains('open'))
@@ -554,6 +556,7 @@ for (const width of [320, 390, 768]) {
   if (!(await back.isVisible())) failures.push('home: back-to-top arrow missing at bottom')
   else {
     await capture(page, 'home-bottom-with-back-to-top-mobile.png', false)
+    await printReference(page, 'home-bottom-back-to-top-390')
     await back.click()
     await page.waitForFunction(() => window.scrollY < 5, null, { timeout: 7000 })
   }
