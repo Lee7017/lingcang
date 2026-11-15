@@ -780,13 +780,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .invite-sms-actions .xs-button.disabled { pointer-events: none; opacity: .5; }
 .invite-copy-section .invite-hint { margin-top: 10px; color: var(--xs-muted); font-size: 11px; line-height: 1.8; }
 .invite-copy-notice { min-height: 22px; color: var(--xs-muted); font-size: 12px; }
-.invite-privacy {
-  display: flex; gap: 8px; align-items: flex-start;
-  margin-top: 13px !important; padding-top: 17px;
-  border-top: 1px solid var(--xs-rule);
-  color: var(--xs-muted); font-size: 11px; line-height: 1.8;
-}
-.invite-privacy svg { flex: 0 0 16px; margin-top: 2px; }
 @media (max-width: 680px) {
   .invite-banner { padding: 19px; flex-direction: column; align-items: stretch; gap: 15px; }
   .invite-banner .xs-button { width: 100%; }

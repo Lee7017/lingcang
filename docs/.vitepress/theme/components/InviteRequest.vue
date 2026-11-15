@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { MessageSquare, Send, Copy, Check, ShieldCheck } from 'lucide-vue-next'
+import { MessageSquare, Send, Copy, Check } from 'lucide-vue-next'
 
 const recipientPhone = '13231226535'
 const applicationTitle = '灵仓内测邀请码申请'
@@ -127,11 +127,9 @@ function onSmsClick(event: MouseEvent) {
           </a>
         </div>
         <p class="invite-hint" v-if="isAppleMobile">iPhone / iPad：请先点击「复制短信内容」，打开短信应用后粘贴并发送。</p>
-        <p class="invite-hint" v-else>系统支持时会尝试带入短信内容；如果没有自动填入，可先复制正文，再粘贴发送。</p>
       </div>
 
       <p class="invite-copy-notice" role="status" aria-live="polite">{{ copyNotice }}</p>
-      <p class="invite-privacy"><ShieldCheck :size="16" /> 官网不保存手机号、昵称或说明；只有你在短信应用中主动发送后，收件人才会收到申请。短信费用以运营商为准。</p>
     </section>
   </main>
 </template>

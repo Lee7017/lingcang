@@ -269,6 +269,10 @@ for (const item of [
   }
   if (await instructions.locator('[data-mailto], a[href^="mailto:"], input[type="email"]').count())
     failures.push(item.label + ': obsolete email entry remains')
+  if (await instructions.getByText('系统支持时会尝试带入短信内容').count() ||
+      await instructions.getByText('官网不保存手机号、昵称或说明').count() ||
+      await instructions.locator('.invite-privacy').count())
+    failures.push(item.label + ': removed explanatory text remains')
   const smsButton = page.locator('.invite-sms-actions a')
   if ((await smsButton.getAttribute('href')) !== null)
     failures.push(item.label + ': SMS action should be disabled before required fields')
