@@ -531,8 +531,12 @@ for (const width of [320, 390, 768]) {
     // 移动目录抽屉会覆盖顶部按钮：使用 VitePress 原生 Esc 交互关闭。
     await page.keyboard.press('Escape')
     await page.waitForFunction(() => !document.querySelector('.VPSidebar')?.classList.contains('open'))
+    // 首页文档内容较短，不应勉强显示返回顶部；转到真实长文档验证。
+    await page.goto(new URL('guide/faq.html', origin).href, { waitUntil: 'networkidle' })
+    const maxScroll = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)
+    if (maxScroll <= 560) failures.push(width + '/' + theme + ': FAQ is too short for back-to-top test')
     await page.evaluate(() => window.scrollTo({ top: 1100, behavior: 'instant' }))
-    await page.waitForTimeout(200)
+    await page.waitForTimeout(250)
     const back = page.locator('.xs-back-to-top')
     if (!(await back.isVisible())) failures.push(width + '/' + theme + ': missing back-to-top arrow after scroll')
     else {
@@ -555,6 +559,13 @@ for (const width of [320, 390, 768]) {
   const back = page.locator('.xs-back-to-top')
   if (!(await back.isVisible())) failures.push('home: back-to-top arrow missing at bottom')
   else {
+    const overlapsFooter = await page.evaluate(() => {
+      const a = document.querySelector('.xs-back-to-top')?.getBoundingClientRect()
+      const b = document.querySelector('.VPFooter .copyright')?.getBoundingClientRect()
+      return a && b && a.left < b.right && a.right > b.left &&
+        a.top < b.bottom && a.bottom > b.top
+    })
+    if (overlapsFooter) failures.push('home: floating arrow obscures copyright')
     await capture(page, 'home-bottom-with-back-to-top-mobile.png', false)
     await printReference(page, 'home-bottom-back-to-top-390')
     await back.click()
