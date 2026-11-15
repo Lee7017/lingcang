@@ -245,7 +245,7 @@ for (const c of [
   await context.close()
 }
 
-// 内测邀请码：可在当前页面编辑邮件正文并复制；不提交数据、不触发 mailto。
+// 内测邀请码：使用短信申请，不收集表单数据；号码、内容复制和短信链接均需准确。
 for (const item of [
   { label: 'invite-desktop-light', width: 1440, height: 900, theme: 'light' },
   { label: 'invite-desktop-dark', width: 1440, height: 900, theme: 'dark' },
@@ -264,39 +264,43 @@ for (const item of [
   if (!response?.ok()) failures.push(item.label + ': invite page HTTP ' + response?.status())
   const instructions = page.locator('.invite-panel')
   const content = await instructions.textContent()
-  for (const word of ['昵称', '手机号', '3406521093@qq.com', '灵仓内测邀请码申请', '使用自己的账号']) {
+  for (const word of ['昵称', '手机号', '13231226535', '灵仓内测邀请码申请', '通过短信申请', '可选说明']) {
     if (!content?.includes(word)) failures.push(item.label + ': missing instruction ' + word)
   }
-  if (await instructions.locator('form, input, [data-mailto], a[href^="mailto:"]').count())
-    failures.push(item.label + ': legacy form or mailto still exists')
-  if (await instructions.locator('textarea').count() !== 1)
-    failures.push(item.label + ': editable email body is missing')
-  const emailButton = page.getByRole('button', { name: '复制邮箱' })
-  const subjectButton = page.getByRole('button', { name: '复制主题' })
-  const bodyButton = page.getByRole('button', { name: '复制邮件正文' })
-  await emailButton.click()
-  const emailClipboard = await page.evaluate(() => navigator.clipboard.readText())
-  if (emailClipboard !== '3406521093@qq.com') failures.push(item.label + ': email copy mismatch')
-  await subjectButton.click()
-  const subjectClipboard = await page.evaluate(() => navigator.clipboard.readText())
-  if (subjectClipboard !== '灵仓内测邀请码申请') failures.push(item.label + ': subject copy mismatch')
-  const editor = page.getByRole('textbox', { name: '邮件正文（可编辑）' })
-  if (!await editor.isEditable()) failures.push(item.label + ': email body is not editable')
-  const initialBody = await editor.inputValue()
-  if (!initialBody.includes('昵称：请填写你的昵称') || !initialBody.includes('手机号：请填写你的手机号'))
-    failures.push(item.label + ': initial email example missing')
-  const customBody = '昵称：测试用户\n手机号：13800123456\n\n我想申请灵仓内测邀请码。'
-  await editor.fill(customBody)
-  if (await editor.inputValue() !== customBody) failures.push(item.label + ': editing email body failed')
-  await bodyButton.click()
-  const bodyClipboard = await page.evaluate(() => navigator.clipboard.readText())
-  if (bodyClipboard !== customBody) failures.push(item.label + ': edited email body copy mismatch')
-  await editor.fill(customBody.replace('13800123456', '13900001111'))
-  if (!await page.getByRole('button', { name: '复制邮件正文' }).count())
-    failures.push(item.label + ': copy state did not reset after editing')
-  await page.getByRole('button', { name: '复制邮件正文' }).click()
-  if ((await page.evaluate(() => navigator.clipboard.readText())) !== customBody.replace('13800123456', '13900001111'))
-    failures.push(item.label + ': second edit not reflected in clipboard')
+  if (await instructions.locator('[data-mailto], a[href^="mailto:"], input[type="email"]').count())
+    failures.push(item.label + ': obsolete email entry remains')
+  const smsButton = page.locator('.invite-sms-actions a')
+  if ((await smsButton.getAttribute('href')) !== null)
+    failures.push(item.label + ': SMS action should be disabled before required fields')
+  const numberButton = page.getByRole('button', { name: '复制号码' })
+  await numberButton.click()
+  const copiedNumber = await page.evaluate(() => navigator.clipboard.readText())
+  if (copiedNumber !== '13231226535') failures.push(item.label + ': recipient copy mismatch')
+
+  await page.getByLabel('手机号 必填').fill('13800123456')
+  await page.getByLabel('昵称 必填').fill('测试用户')
+  const expectedBasic = '灵仓内测邀请码申请\\n手机号：13800123456\\n昵称：测试用户'.replaceAll('\\n', '\n')
+  const preview = page.locator('.invite-sms-preview')
+  if ((await preview.textContent())?.trim() !== expectedBasic)
+    failures.push(item.label + ': SMS message format mismatch without optional note')
+  const hrefBasic = await smsButton.getAttribute('href')
+  if (!hrefBasic?.startsWith('sms:13231226535?body=') ||
+    decodeURIComponent((hrefBasic.split('?body=')[1] || '')) !== expectedBasic)
+    failures.push(item.label + ': generated SMS recipient/body mismatch')
+  await page.getByLabel('可选说明').fill('希望优先体验局域网同步')
+  const fullBody = expectedBasic + '\n说明：希望优先体验局域网同步'
+  if ((await preview.textContent())?.trim() !== fullBody)
+    failures.push(item.label + ': optional note formatting mismatch')
+  await page.getByRole('button', { name: '复制短信内容' }).click()
+  if ((await page.evaluate(() => navigator.clipboard.readText())) !== fullBody)
+    failures.push(item.label + ': SMS content copy mismatch')
+  await page.getByLabel('手机号 必填').fill('13900001111')
+  if (!(await page.getByRole('button', { name: '复制短信内容' }).count()))
+    failures.push(item.label + ': copy state not reset on input')
+  await page.getByRole('button', { name: '复制短信内容' }).click()
+  const updatedBody = fullBody.replace('13800123456', '13900001111')
+  if ((await page.evaluate(() => navigator.clipboard.readText())) !== updatedBody)
+    failures.push(item.label + ': copied SMS message failed to refresh')
   const layout = await page.evaluate(() => ({
     overflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
     title: document.querySelector('h1')?.textContent?.trim(),
@@ -307,11 +311,27 @@ for (const item of [
   }))
   if (layout.overflow > 1) failures.push(item.label + ': horizontal overflow')
   if (layout.buttons.length !== 3 || layout.buttons.some(b => b.height !== 46 || b.corners !== '12px'))
-    failures.push(item.label + ': copy button styling inconsistent')
+    failures.push(item.label + ': button styling inconsistent')
   if (layout.footer !== 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.') failures.push(item.label + ': footer missing')
   if (pageErrors.length) failures.push(item.label + ': JS exceptions ' + pageErrors.join(' | '))
-  findings.push({ test: 'invite-manual-email', variant: item.label, emailClipboard, subjectClipboard, bodyCopied: true, ...layout })
+  findings.push({ test: 'invite-sms', variant: item.label, copiedNumber, bodyCopied: true, ...layout })
   await capture(page, item.label + '.png', true)
+  await ctx.close()
+}
+// Apple 官方 sms: 协议只保障打开短信并指定收件人：iPhone 应提示先复制内容。
+{
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
+  })
+  const page = await ctx.newPage()
+  await page.goto(new URL('invite/', origin).href, { waitUntil: 'networkidle' })
+  await page.getByLabel('手机号 必填').fill('13800123456')
+  await page.getByLabel('昵称 必填').fill('测试用户')
+  const smsHref = await page.locator('.invite-sms-actions a').getAttribute('href')
+  if (smsHref !== 'sms:13231226535') failures.push('invite-iOS: SMS URL should only contain recipient')
+  if (!(await page.locator('.invite-hint').textContent())?.includes('iPhone / iPad'))
+    failures.push('invite-iOS: paste instructions missing')
   await ctx.close()
 }
 for (const entry of [{label:'home',url:''},{label:'download',url:'download/'}]) {

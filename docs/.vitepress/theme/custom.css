@@ -763,28 +763,32 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .invite-copy-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .invite-copy-value { font-size: 14px; font-weight: 650; overflow-wrap: anywhere; min-width: 0; }
 .invite-copy-button { flex-shrink: 0; min-width: 112px; }
-.invite-mail-example {
-  display: block;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 158px;
-  padding: 17px;
-  margin: 0;
-  font: inherit;
-  font-size: 14px;
-  line-height: 1.9;
-  color: var(--xs-ink);
-  background: var(--xs-soft);
-  border: 1px solid var(--xs-rule);
-  border-radius: 12px;
-  resize: vertical;
+.invite-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.invite-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 13px; }
+.invite-field span { font-weight: 650; color: var(--xs-ink); }
+.invite-field em { font-style: normal; font-size: 11px; font-weight: 500; color: var(--xs-muted); }
+.invite-field-full { grid-column: 1 / -1; }
+.invite-field input, .invite-field textarea {
+  display: block; box-sizing: border-box; width: 100%; min-width: 0;
+  padding: 12px 14px; margin: 0; font: inherit; font-size: 14px; line-height: 1.65;
+  color: var(--xs-ink); background: var(--xs-soft);
+  border: 1px solid var(--xs-rule); border-radius: 12px;
 }
-.invite-mail-example:focus-visible {
-  outline: 2px solid var(--xs-ink);
-  outline-offset: 2px;
+.invite-field input { min-height: 46px; }
+.invite-field textarea { min-height: 100px; resize: vertical; }
+.invite-field input:focus-visible, .invite-field textarea:focus-visible {
+  outline: 2px solid var(--xs-ink); outline-offset: 2px;
 }
-.invite-copy-section .invite-hint { margin-top: 8px; color: var(--xs-muted); font-size: 11px; line-height: 1.8; }
-.invite-template-button { margin-top: 13px; width: 100%; }
+.invite-sms-preview {
+  width: 100%; margin: 0; min-height: 125px; padding: 16px;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+  color: var(--xs-ink); font: inherit; font-size: 13px; line-height: 1.8;
+  background: var(--xs-soft); border: 1px solid var(--xs-rule); border-radius: 12px;
+}
+.invite-sms-actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.invite-sms-actions .xs-button { flex: 1; min-width: 0; }
+.invite-sms-actions .xs-button.disabled { pointer-events: none; opacity: .5; }
+.invite-copy-section .invite-hint { margin-top: 10px; color: var(--xs-muted); font-size: 11px; line-height: 1.8; }
 .invite-copy-notice { min-height: 22px; color: var(--xs-muted); font-size: 12px; }
 .invite-privacy {
   display: flex; gap: 8px; align-items: flex-start;
@@ -800,5 +804,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   .invite-panel h2 { font-size: 19px; }
   .invite-copy-row { flex-direction: column; align-items: stretch; gap: 11px; }
   .invite-copy-button { width: 100%; }
+  .invite-fields { grid-template-columns: 1fr; }
+  .invite-sms-actions { flex-direction: column; }
+  .invite-sms-actions .xs-button { width: 100%; }
   .invite-steps { margin-top: 20px; }
 }

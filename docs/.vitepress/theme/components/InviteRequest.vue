@@ -1,20 +1,44 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Mail, Copy, Check, ShieldCheck } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import { MessageSquare, Send, Copy, Check, ShieldCheck } from 'lucide-vue-next'
 
-const applicationEmail = '3406521093@qq.com'
-const applicationSubject = '灵仓内测邀请码申请'
-const applicationTemplate = [
-  '昵称：请填写你的昵称',
-  '手机号：请填写你的手机号',
-  '',
-  '我想申请灵仓内测邀请码，请通过本邮件回复。'
-].join('\n')
-const emailBody = ref(applicationTemplate)
+const recipientPhone = '13231226535'
+const applicationTitle = '灵仓内测邀请码申请'
+const applicantPhone = ref('')
+const nickname = ref('')
+const explanation = ref('')
+const isAppleMobile = ref(false)
 const copied = ref('')
 const copyNotice = ref('')
 
-function onBodyInput() {
+onMounted(() => {
+  const agent = navigator.userAgent
+  isAppleMobile.value = /iPad|iPhone|iPod/i.test(agent)
+    || (/Macintosh/i.test(agent) && navigator.maxTouchPoints > 1)
+})
+
+const messageText = computed(() => {
+  const content = [
+    applicationTitle,
+    `手机号：${applicantPhone.value.trim() || '请填写手机号'}`,
+    `昵称：${nickname.value.trim() || '请填写昵称'}`
+  ]
+  if (explanation.value.trim()) content.push(`说明：${explanation.value.trim()}`)
+  return content.join('\n')
+})
+
+const isReady = computed(() =>
+  /^1[3-9]\d{9}$/.test(applicantPhone.value.trim())
+  && nickname.value.trim().length > 0
+)
+
+const smsHref = computed(() =>
+  isAppleMobile.value
+    ? `sms:${recipientPhone}`
+    : `sms:${recipientPhone}?body=${encodeURIComponent(messageText.value)}`
+)
+
+function onInput() {
   copied.value = ''
   copyNotice.value = ''
 }
@@ -23,11 +47,22 @@ async function copyText(key: string, value: string) {
   try {
     await navigator.clipboard.writeText(value)
     copied.value = key
-    copyNotice.value = '已复制，请粘贴到你自己的邮件中。'
+    copyNotice.value = '已复制，可以粘贴到短信应用中。'
   } catch {
     copied.value = ''
-    copyNotice.value = '无法自动复制，请长按或选中文字，手动复制。'
+    copyNotice.value = '无法自动复制，请选中文字后手动复制。'
   }
+}
+
+function onSmsClick(event: MouseEvent) {
+  if (!isReady.value) {
+    event.preventDefault()
+    copyNotice.value = '请先填写有效的 11 位手机号和昵称。'
+    return
+  }
+  copyNotice.value = isAppleMobile.value
+    ? '请将复制的短信内容粘贴到短信应用中，检查后由你自己发送。'
+    : '请在短信应用中核对收件人和内容后发送。'
 }
 </script>
 
@@ -36,69 +71,79 @@ async function copyText(key: string, value: string) {
     <div class="page-intro">
       <span class="eyebrow">邀请内测</span>
       <h1>申请灵仓内测邀请码</h1>
-      <p>请使用你自己的邮箱发送申请邮件，写明昵称和手机号。我们会通过邮件回复邀请码。</p>
+      <p>填写手机号和昵称，通过手机短信向灵仓申请邀请码；可选填一段说明。</p>
     </div>
 
     <section class="invite-panel" aria-labelledby="invite-instructions-title">
       <div class="invite-panel-heading">
-        <span class="invite-panel-icon"><Mail :size="24" /></span>
+        <span class="invite-panel-icon"><MessageSquare :size="24" /></span>
         <div>
-          <h2 id="invite-instructions-title">通过邮件申请</h2>
-          <p>无需在官网填写表单，也无需提供邮箱密码。</p>
+          <h2 id="invite-instructions-title">通过短信申请</h2>
+          <p>短信由你本人确认发送，官网不会代发短信或收集申请表单。</p>
         </div>
       </div>
 
       <ol class="invite-steps">
-        <li>打开你常用的邮箱（例如 QQ 邮箱、163 邮箱或 Gmail），使用自己的账号写一封新邮件。</li>
-        <li>将下面的收件邮箱和邮件主题填入邮件。</li>
-        <li>在正文写明<strong>昵称和手机号（均必填）</strong>，确认后由你自己点击「发送」。</li>
+        <li>填写<strong>手机号和昵称（必填）</strong>，可补充申请说明。</li>
+        <li>检查下方自动生成的短信内容。</li>
+        <li>点击「打开短信应用」并确认发送；无法直接打开时，可复制内容后手动发送。</li>
       </ol>
 
       <div class="invite-copy-section">
-        <div class="invite-copy-heading"><strong>收件邮箱</strong><span>发往灵仓</span></div>
+        <div class="invite-copy-heading"><strong>短信收件号码</strong><span>发往灵仓</span></div>
         <div class="invite-copy-row">
-          <span class="invite-copy-value">{{ applicationEmail }}</span>
-          <button class="xs-button secondary invite-copy-button" type="button" @click="copyText('email', applicationEmail)">
-            <Check v-if="copied === 'email'" :size="16" /><Copy v-else :size="16" />
-            {{ copied === 'email' ? '已复制' : '复制邮箱' }}
-          </button>
-        </div>
-      </div>
-
-      <div class="invite-copy-section">
-        <div class="invite-copy-heading"><strong>邮件主题</strong></div>
-        <div class="invite-copy-row">
-          <span class="invite-copy-value">{{ applicationSubject }}</span>
-          <button class="xs-button secondary invite-copy-button" type="button" @click="copyText('subject', applicationSubject)">
-            <Check v-if="copied === 'subject'" :size="16" /><Copy v-else :size="16" />
-            {{ copied === 'subject' ? '已复制' : '复制主题' }}
+          <span class="invite-copy-value">{{ recipientPhone }}</span>
+          <button class="xs-button secondary invite-copy-button" type="button" @click="copyText('number', recipientPhone)">
+            <Check v-if="copied === 'number'" :size="16" /><Copy v-else :size="16" />
+            {{ copied === 'number' ? '已复制' : '复制号码' }}
           </button>
         </div>
       </div>
 
       <div class="invite-copy-section">
         <div class="invite-copy-heading">
-          <label for="invite-mail-body">邮件正文（可编辑）</label>
-          <span>把昵称和手机号改为自己的信息后再复制</span>
+          <strong>申请信息</strong>
+          <span>手机号、昵称必填；说明可不填</span>
         </div>
-        <textarea
-          id="invite-mail-body"
-          v-model="emailBody"
-          class="invite-mail-example"
-          rows="6"
-          spellcheck="false"
-          aria-describedby="invite-mail-hint"
-          @input="onBodyInput"
-        ></textarea>
-        <p id="invite-mail-hint" class="invite-hint">内容仅保留在当前网页中，不会由官网提交或发送。</p>
-        <button class="xs-button secondary invite-template-button" type="button" @click="copyText('template', emailBody)">
-          <Check v-if="copied === 'template'" :size="16" /><Copy v-else :size="16" />
-          {{ copied === 'template' ? '已复制' : '复制邮件正文' }}
-        </button>
+        <div class="invite-fields">
+          <label class="invite-field" for="invite-phone">
+            <span>手机号 <em>必填</em></span>
+            <input id="invite-phone" v-model="applicantPhone" type="tel" inputmode="numeric"
+              maxlength="11" autocomplete="tel-national" placeholder="请输入 11 位手机号" @input="onInput" />
+          </label>
+          <label class="invite-field" for="invite-nickname">
+            <span>昵称 <em>必填</em></span>
+            <input id="invite-nickname" v-model="nickname" type="text" maxlength="32"
+              autocomplete="nickname" placeholder="请输入昵称" @input="onInput" />
+          </label>
+          <label class="invite-field invite-field-full" for="invite-explanation">
+            <span>可选说明</span>
+            <textarea id="invite-explanation" v-model="explanation" rows="3" maxlength="200"
+              placeholder="例如：想体验哪项功能（可不填）" @input="onInput"></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="invite-copy-section">
+        <div class="invite-copy-heading"><strong>短信内容预览</strong><span>按指定格式自动生成</span></div>
+        <pre class="invite-sms-preview" aria-label="短信内容预览">{{ messageText }}</pre>
+        <div class="invite-sms-actions">
+          <button class="xs-button secondary" type="button" @click="copyText('message', messageText)">
+            <Check v-if="copied === 'message'" :size="16" /><Copy v-else :size="16" />
+            {{ copied === 'message' ? '已复制内容' : '复制短信内容' }}
+          </button>
+          <a class="xs-button primary" :class="{ disabled: !isReady }"
+            :href="isReady ? smsHref : undefined" :aria-disabled="!isReady"
+            @click="onSmsClick">
+            <Send :size="16" />打开短信应用
+          </a>
+        </div>
+        <p class="invite-hint" v-if="isAppleMobile">iPhone / iPad：请先点击「复制短信内容」，打开短信应用后粘贴并发送。</p>
+        <p class="invite-hint" v-else>系统支持时会尝试带入短信内容；如果没有自动填入，可先复制正文，再粘贴发送。</p>
       </div>
 
       <p class="invite-copy-notice" role="status" aria-live="polite">{{ copyNotice }}</p>
-      <p class="invite-privacy"><ShieldCheck :size="16" /> 官网不收集昵称、手机号或邮箱密码。只有你自己发送邮件后，收件人才会收到你的申请信息。</p>
+      <p class="invite-privacy"><ShieldCheck :size="16" /> 官网不保存手机号、昵称或说明；只有你在短信应用中主动发送后，收件人才会收到申请。短信费用以运营商为准。</p>
     </section>
   </main>
 </template>
