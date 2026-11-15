@@ -245,7 +245,7 @@ for (const c of [
   await context.close()
 }
 
-// 内测邀请码：使用短信申请，不收集表单数据；号码、内容复制和短信链接均需准确。
+// 内测邀请码：精简界面，不显示操作步骤/短信预览/复制号码，保留短信正文复制和发送链接。
 for (const item of [
   { label: 'invite-desktop-light', width: 1440, height: 900, theme: 'light' },
   { label: 'invite-desktop-dark', width: 1440, height: 900, theme: 'dark' },
@@ -272,25 +272,24 @@ for (const item of [
   const smsButton = page.locator('.invite-sms-actions a')
   if ((await smsButton.getAttribute('href')) !== null)
     failures.push(item.label + ': SMS action should be disabled before required fields')
-  const numberButton = page.getByRole('button', { name: '复制号码' })
-  await numberButton.click()
-  const copiedNumber = await page.evaluate(() => navigator.clipboard.readText())
-  if (copiedNumber !== '13231226535') failures.push(item.label + ': recipient copy mismatch')
+  if (await page.locator('.invite-steps, .invite-sms-preview').count())
+    failures.push(item.label + ': removed instructions or SMS preview still exists')
+  if (await page.getByText('短信内容预览', { exact: true }).count())
+    failures.push(item.label + ': removed SMS preview heading still exists')
+  if (await page.getByRole('button', { name: '复制号码' }).count())
+    failures.push(item.label + ': removed phone copy button still exists')
+  if (!(await instructions.getByText('13231226535').count()))
+    failures.push(item.label + ': recipient number must remain visible')
 
   await page.getByLabel('手机号 必填').fill('13800123456')
   await page.getByLabel('昵称 必填').fill('测试用户')
   const expectedBasic = '灵仓内测邀请码申请\\n手机号：13800123456\\n昵称：测试用户'.replaceAll('\\n', '\n')
-  const preview = page.locator('.invite-sms-preview')
-  if ((await preview.textContent())?.trim() !== expectedBasic)
-    failures.push(item.label + ': SMS message format mismatch without optional note')
   const hrefBasic = await smsButton.getAttribute('href')
   if (!hrefBasic?.startsWith('sms:13231226535?body=') ||
     decodeURIComponent((hrefBasic.split('?body=')[1] || '')) !== expectedBasic)
     failures.push(item.label + ': generated SMS recipient/body mismatch')
   await page.getByLabel('可选说明').fill('希望优先体验局域网同步')
   const fullBody = expectedBasic + '\n说明：希望优先体验局域网同步'
-  if ((await preview.textContent())?.trim() !== fullBody)
-    failures.push(item.label + ': optional note formatting mismatch')
   await page.getByRole('button', { name: '复制短信内容' }).click()
   if ((await page.evaluate(() => navigator.clipboard.readText())) !== fullBody)
     failures.push(item.label + ': SMS content copy mismatch')
@@ -310,11 +309,11 @@ for (const item of [
     footer: document.querySelector('.VPFooter .copyright')?.textContent?.trim()
   }))
   if (layout.overflow > 1) failures.push(item.label + ': horizontal overflow')
-  if (layout.buttons.length !== 3 || layout.buttons.some(b => b.height !== 46 || b.corners !== '12px'))
+  if (layout.buttons.length !== 2 || layout.buttons.some(b => b.height !== 46 || b.corners !== '12px'))
     failures.push(item.label + ': button styling inconsistent')
   if (layout.footer !== 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.') failures.push(item.label + ': footer missing')
   if (pageErrors.length) failures.push(item.label + ': JS exceptions ' + pageErrors.join(' | '))
-  findings.push({ test: 'invite-sms', variant: item.label, copiedNumber, bodyCopied: true, ...layout })
+  findings.push({ test: 'invite-sms', variant: item.label, bodyCopied: true, ...layout })
   await capture(page, item.label + '.png', true)
   await ctx.close()
 }

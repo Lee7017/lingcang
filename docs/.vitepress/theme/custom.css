@@ -753,16 +753,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 }
 .invite-panel h2 { font-size: 21px; font-weight: 770; }
 .invite-panel-heading p { font-size: 12px; color: var(--xs-muted); margin-top: 7px; line-height: 1.8; }
-.invite-steps { margin: 25px 0 22px; padding-left: 23px; color: var(--xs-muted); font-size: 13px; line-height: 1.9; }
-.invite-steps li { margin-bottom: 7px; }
-.invite-steps strong { color: var(--xs-ink); }
 .invite-copy-section { padding: 18px 0; border-top: 1px solid var(--xs-rule); }
 .invite-copy-heading { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin-bottom: 12px; }
 .invite-copy-heading strong, .invite-copy-heading label { font-size: 14px; font-weight: 730; color: var(--xs-ink); }
 .invite-copy-heading span { color: var(--xs-muted); font-size: 11px; }
 .invite-copy-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .invite-copy-value { font-size: 14px; font-weight: 650; overflow-wrap: anywhere; min-width: 0; }
-.invite-copy-button { flex-shrink: 0; min-width: 112px; }
 .invite-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
 .invite-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 13px; }
 .invite-field span { font-weight: 650; color: var(--xs-ink); }
@@ -778,12 +774,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .invite-field textarea { min-height: 100px; resize: vertical; }
 .invite-field input:focus-visible, .invite-field textarea:focus-visible {
   outline: 2px solid var(--xs-ink); outline-offset: 2px;
-}
-.invite-sms-preview {
-  width: 100%; margin: 0; min-height: 125px; padding: 16px;
-  white-space: pre-wrap; overflow-wrap: anywhere;
-  color: var(--xs-ink); font: inherit; font-size: 13px; line-height: 1.8;
-  background: var(--xs-soft); border: 1px solid var(--xs-rule); border-radius: 12px;
 }
 .invite-sms-actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
 .invite-sms-actions .xs-button { flex: 1; min-width: 0; }
@@ -803,9 +793,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   .invite-panel { padding: 23px 19px; }
   .invite-panel h2 { font-size: 19px; }
   .invite-copy-row { flex-direction: column; align-items: stretch; gap: 11px; }
-  .invite-copy-button { width: 100%; }
   .invite-fields { grid-template-columns: 1fr; }
   .invite-sms-actions { flex-direction: column; }
   .invite-sms-actions .xs-button { width: 100%; }
-  .invite-steps { margin-top: 20px; }
 }

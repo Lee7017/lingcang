@@ -83,20 +83,10 @@ function onSmsClick(event: MouseEvent) {
         </div>
       </div>
 
-      <ol class="invite-steps">
-        <li>填写<strong>手机号和昵称（必填）</strong>，可补充申请说明。</li>
-        <li>检查下方自动生成的短信内容。</li>
-        <li>点击「打开短信应用」并确认发送；无法直接打开时，可复制内容后手动发送。</li>
-      </ol>
-
       <div class="invite-copy-section">
         <div class="invite-copy-heading"><strong>短信收件号码</strong><span>发往灵仓</span></div>
         <div class="invite-copy-row">
           <span class="invite-copy-value">{{ recipientPhone }}</span>
-          <button class="xs-button secondary invite-copy-button" type="button" @click="copyText('number', recipientPhone)">
-            <Check v-if="copied === 'number'" :size="16" /><Copy v-else :size="16" />
-            {{ copied === 'number' ? '已复制' : '复制号码' }}
-          </button>
         </div>
       </div>
 
@@ -125,8 +115,6 @@ function onSmsClick(event: MouseEvent) {
       </div>
 
       <div class="invite-copy-section">
-        <div class="invite-copy-heading"><strong>短信内容预览</strong><span>按指定格式自动生成</span></div>
-        <pre class="invite-sms-preview" aria-label="短信内容预览">{{ messageText }}</pre>
         <div class="invite-sms-actions">
           <button class="xs-button secondary" type="button" @click="copyText('message', messageText)">
             <Check v-if="copied === 'message'" :size="16" /><Copy v-else :size="16" />
