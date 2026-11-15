@@ -526,16 +526,17 @@ for (const width of [320, 390, 768]) {
       failures.push(width + '/' + theme + ': sidebar did not open')
     await page.waitForTimeout(300)
     await capture(page, 'doc-nav-sidebar-' + theme + '-' + width + '.png', false)
-    // 关闭侧栏，再检测滚动后的返回顶部
-    await menu.click()
+    // 移动目录抽屉会覆盖顶部按钮：使用 VitePress 原生 Esc 交互关闭。
+    await page.keyboard.press('Escape')
+    await page.waitForFunction(() => !document.querySelector('.VPSidebar')?.classList.contains('open'))
     await page.evaluate(() => window.scrollTo({ top: 1100, behavior: 'instant' }))
     await page.waitForTimeout(200)
     const back = page.getByRole('button', { name: '返回顶部' })
     if (!(await back.isVisible())) failures.push(width + '/' + theme + ': missing back-to-top arrow after scroll')
     else {
       await back.click()
-      await page.waitForFunction(() => window.scrollY < 5, { timeout: 7000 })
-      if (await back.count()) failures.push(width + '/' + theme + ': back-to-top arrow did not hide at top')
+      await page.waitForFunction(() => window.scrollY < 5, null, { timeout: 7000 })
+      await back.waitFor({ state: 'detached', timeout: 3000 })
     }
     if (errors.length) failures.push(width + '/' + theme + ': JS errors ' + errors.join(' | '))
     findings.push({ test: 'doc-mobile-menu-and-top', width, theme, colors, dropdownColors })
@@ -554,7 +555,7 @@ for (const width of [320, 390, 768]) {
   else {
     await capture(page, 'home-bottom-with-back-to-top-mobile.png', false)
     await back.click()
-    await page.waitForFunction(() => window.scrollY < 5, { timeout: 7000 })
+    await page.waitForFunction(() => window.scrollY < 5, null, { timeout: 7000 })
   }
   await ctx.close()
 }
