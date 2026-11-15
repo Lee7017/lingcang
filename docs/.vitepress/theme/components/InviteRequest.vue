@@ -94,7 +94,7 @@ function onSmsClick(event: MouseEvent) {
           </label>
           <label class="invite-field invite-field-full" for="invite-explanation">
             <span>可选说明</span>
-            <textarea id="invite-explanation" v-model="explanation" rows="3" maxlength="200"
+            <textarea id="invite-explanation" v-model="explanation" rows="2" maxlength="200"
               placeholder="例如：想体验哪项功能（可不填）" @input="onInput"></textarea>
           </label>
         </div>
