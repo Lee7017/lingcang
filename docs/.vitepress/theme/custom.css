@@ -796,10 +796,35 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 @media (max-width: 680px) {
   .invite-banner { padding: 19px; flex-direction: column; align-items: stretch; gap: 15px; }
   .invite-banner .xs-button { width: 100%; }
-  .invite-page { padding-top: 44px; }
-  .invite-page .page-intro { margin-bottom: 28px; }
+
+  /* 手机端表单：缩小字号层级、控件和留白，但保持可触控区域不低于 44px。
+     输入框文字使用 16px，避免 iOS Safari 聚焦时自动放大页面。 */
+  .invite-page { padding: 28px 17px 48px; }
+  .invite-page .page-intro { margin-bottom: 21px; }
+  .invite-page .page-intro h1 {
+    font-size: 24px; line-height: 1.35;
+    font-weight: 710; letter-spacing: -.035em;
+  }
+  .invite-copy-section { margin-bottom: 18px; }
+  .invite-panel > .invite-copy-section:first-child { padding-bottom: 16px; }
+  .invite-copy-heading { margin-bottom: 6px; }
+  .invite-copy-heading strong { font-size: 12px; }
   .invite-copy-row { align-items: stretch; }
-  .invite-fields { grid-template-columns: 1fr; }
-  .invite-sms-actions { flex-direction: column; }
-  .invite-sms-actions .xs-button { width: 100%; }
+  .invite-copy-value { font-size: 17px; line-height: 1.4; }
+  .invite-fields { grid-template-columns: 1fr; gap: 11px; }
+  .invite-field { gap: 5px; font-size: 12px; }
+  .invite-field input, .invite-field textarea {
+    font-size: 16px; line-height: 1.35;
+    padding: 10px 12px; border-radius: 10px;
+  }
+  .invite-field input { min-height: 44px; }
+  .invite-field textarea { min-height: 78px; }
+  .invite-sms-actions { flex-direction: row; gap: 10px; margin-top: 0; }
+  .invite-sms-actions .xs-button {
+    width: auto; min-height: 44px; padding: 0 9px;
+    font-size: 12px; font-weight: 650; gap: 6px; border-radius: 10px;
+  }
+  .invite-sms-actions .xs-button svg { width: 15px; height: 15px; }
+  .invite-copy-section .invite-hint { margin-top: 8px; }
+  .invite-copy-notice { font-size: 11px; }
 }

@@ -249,8 +249,11 @@ for (const c of [
 for (const item of [
   { label: 'invite-desktop-light', width: 1440, height: 900, theme: 'light' },
   { label: 'invite-desktop-dark', width: 1440, height: 900, theme: 'dark' },
+  { label: 'invite-mobile-320-light', width: 320, height: 720, theme: 'light' },
+  { label: 'invite-mobile-360-light', width: 360, height: 780, theme: 'light' },
   { label: 'invite-mobile-light', width: 390, height: 844, theme: 'light' },
-  { label: 'invite-mobile-dark', width: 390, height: 844, theme: 'dark' }
+  { label: 'invite-mobile-dark', width: 390, height: 844, theme: 'dark' },
+  { label: 'invite-mobile-430-light', width: 430, height: 932, theme: 'light' }
 ]) {
   const ctx = await browser.newContext({
     viewport: { width: item.width, height: item.height }, colorScheme: item.theme,
@@ -292,6 +295,7 @@ for (const item of [
   if (!(await instructions.getByText('13231226535').count()))
     failures.push(item.label + ': recipient number must remain visible')
 
+  if (item.width < 500) await capture(page, item.label + '-empty.png', true)
   await page.getByLabel('手机号 必填').fill('13800123456')
   await page.getByLabel('昵称 必填').fill('测试用户')
   const expectedBasic = '灵仓内测邀请码申请\\n手机号：13800123456\\n昵称：测试用户'.replaceAll('\\n', '\n')
@@ -318,6 +322,22 @@ for (const item of [
       height: Math.round(el.getBoundingClientRect().height), corners: getComputedStyle(el).borderRadius
     })),
     footer: document.querySelector('.VPFooter .copyright')?.textContent?.trim(),
+    mobileGeometry: (() => {
+      const rect = el => {
+        const r = el.getBoundingClientRect()
+        return { x: r.x, y: r.y, width: r.width, height: r.height, bottom: r.bottom }
+      }
+      const h1 = document.querySelector('.invite-page h1')
+      const phoneInput = document.querySelector('#invite-phone')
+      const nicknameInput = document.querySelector('#invite-nickname')
+      const textarea = document.querySelector('#invite-explanation')
+      return {
+        h1: rect(h1), h1FontSize: parseFloat(getComputedStyle(h1).fontSize),
+        phone: rect(phoneInput), nickname: rect(nicknameInput),
+        explanation: rect(textarea),
+        actions: [...document.querySelectorAll('.invite-sms-actions .xs-button')].map(rect)
+      }
+    })(),
     panel: (() => {
       const el = document.querySelector('.invite-panel')
       const heading = document.querySelector('.invite-page h1')
@@ -336,13 +356,28 @@ for (const item of [
   if (layout.panel.borderWidth !== '0px' || layout.panel.boxShadow !== 'none' ||
       !['rgba(0, 0, 0, 0)', 'transparent'].includes(layout.panel.backgroundColor))
     failures.push(item.label + ': oversized glass card styling was not removed')
-  if (layout.buttons.length !== 2 || layout.buttons.some(b => b.height !== 46 || b.corners !== '12px'))
+  const expectedButtonHeight = item.width < 500 ? 44 : 46
+  const expectedButtonRadius = item.width < 500 ? '10px' : '12px'
+  if (layout.buttons.length !== 2 ||
+      layout.buttons.some(b => b.height !== expectedButtonHeight || b.corners !== expectedButtonRadius))
     failures.push(item.label + ': button styling inconsistent')
+  if (item.width < 500) {
+    const m = layout.mobileGeometry
+    if (m.h1FontSize > 25 || m.phone.height > 45 || m.nickname.height > 45 ||
+        m.explanation.height > 82)
+      failures.push(item.label + ': mobile typography or fields are still oversized: ' + JSON.stringify(m))
+    if (m.actions.length !== 2 || Math.abs(m.actions[0].y - m.actions[1].y) > 1 ||
+        m.actions[0].bottom - m.h1.y > 535)
+      failures.push(item.label + ': mobile actions do not fit compactly on one row: ' + JSON.stringify(m))
+    if (m.actions.some(a => a.x < 0 || a.x + a.width > item.width))
+      failures.push(item.label + ': mobile buttons outside viewport: ' + JSON.stringify(m.actions))
+  }
   if (layout.footer !== 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.') failures.push(item.label + ': footer missing')
   if (pageErrors.length) failures.push(item.label + ': JS exceptions ' + pageErrors.join(' | '))
   findings.push({ test: 'invite-sms', variant: item.label, bodyCopied: true, ...layout })
   await capture(page, item.label + '.png', true)
-  if (item.label === 'invite-desktop-light' || item.label === 'invite-mobile-light')
+  if (item.label === 'invite-desktop-light' || item.label === 'invite-mobile-light' ||
+      item.label === 'invite-mobile-320-light')
     await printReference(page, item.label)
   await ctx.close()
 }
