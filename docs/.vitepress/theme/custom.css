@@ -66,7 +66,7 @@
   --xs-shadow-hover: 0 32px 85px rgba(0, 0, 0, .33);
 }
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
 body {
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
@@ -104,8 +104,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 }
 .VPNavBar .content { border-bottom-color: transparent !important; }
 .VPNavBarTitle .title { font-weight: 780; letter-spacing: -.035em; }
-.VPNavBarMenuLink, .VPNavBarMenuGroup .text { font-size: 13px; font-weight: 570; }
-.VPNavBarMenuLink.active { font-weight: 730; }
+.VPNavBarMenuLink, .VPNavBarMenuGroup .text { font-size: 13px; font-weight: 600; }
+.VPNavBarMenuLink.active { font-weight: 600; }
+/* VitePress attaches a scoped selector to nav links. Keep active/inactive
+   font metrics identical so the right-aligned menu cannot move on navigation. */
+.VPNavBarMenu .VPNavBarMenuLink,
+.VPNavBarMenu .VPNavBarMenuLink.active {
+  font-weight: 600;
+}
 .VPMenu, .VPNavScreen {
   border: 1px solid var(--xs-rule);
   background: var(--xs-frost-strong) !important;
