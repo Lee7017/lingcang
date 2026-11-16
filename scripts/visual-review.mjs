@@ -758,7 +758,7 @@ for (const variant of [
       variant.theme === 'dark', { timeout: 5000 })
     if (!(await screen.isVisible())) failures.push(label + ': appearance toggling closed navigation')
     await hamburger.click()
-    if (await screen.count()) failures.push(label + ': hamburger failed to close menu')
+    await screen.waitFor({ state: 'detached', timeout: 4000 })
     if (errors.length) failures.push(label + ': JS errors ' + errors.join(' | '))
     findings.push({ test: 'mobile-nav-contrast', scenario: label, metrics })
     await ctx.close()
