@@ -4,7 +4,10 @@
  * 保留 VitePress 原生侧边栏与响应式交互，不设置网站级 Footer。
  */
 :root {
+  /* 让系统深色偏好由 VitePress 主题切换处理，禁止 Android/Chromium
+     的强制深色功能再次反转按钮、文字和 SVG 的实际绘制颜色。 */
   color-scheme: light;
+  color-scheme: only light;
   --vp-font-family-base: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --vp-c-brand-1: #16181c;
   --vp-c-brand-2: #383c43;
@@ -37,6 +40,14 @@
 }
 .dark {
   color-scheme: dark;
+  color-scheme: only dark;
+/* 根元素用更具体的选择器，避免 VitePress 默认样式覆盖禁止强制改色的声明。 */
+}
+:root.dark {
+  color-scheme: dark;
+  color-scheme: only dark;
+}
+.dark {
   --vp-c-brand-1: #f6f7f9;
   --vp-c-brand-2: #d7dbe1;
   --vp-c-brand-3: #abb0bb;

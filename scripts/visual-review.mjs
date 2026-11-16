@@ -582,6 +582,105 @@ for (const width of [320, 390, 768]) {
   await ctx.close()
 }
 
+// 系统深色模式 ≠ 网页手动深色：覆盖系统自动切换、系统深色 + 手动浅色，
+// 以及 Chromium/Android 的强制深色网页模式（会改变实际绘制颜色但不改变 computedStyle）。
+const forcedBrowser = await chromium.launch({
+  headless: true,
+  args: ['--enable-features=WebContentsForceDark', '--force-dark-mode']
+})
+try {
+  const systemDarkCases = [
+    { label: 'system-dark-auto', forced: false, appearance: null, theme: 'dark' },
+    { label: 'system-dark-manual-light', forced: false, appearance: 'light', theme: 'light' },
+    { label: 'system-dark-manual-dark', forced: false, appearance: 'dark', theme: 'dark' },
+    { label: 'android-force-dark-site-light', forced: true, appearance: 'light', theme: 'light' },
+    { label: 'android-force-dark-site-dark', forced: true, appearance: 'dark', theme: 'dark' }
+  ]
+  for (const variant of systemDarkCases) {
+    const activeBrowser = variant.forced ? forcedBrowser : browser
+    for (const route of [
+      { slug: 'home', url: '' },
+      { slug: 'download', url: 'download/' },
+      { slug: 'guide', url: 'guide/' },
+      { slug: 'invite', url: 'invite/' }
+    ]) {
+      const ctx = await activeBrowser.newContext({
+        viewport: { width: 390, height: 844 },
+        isMobile: true,
+        hasTouch: true,
+        deviceScaleFactor: 1,
+        colorScheme: 'dark'
+      })
+      if (variant.appearance !== null) {
+        await ctx.addInitScript((appearance) => {
+          localStorage.setItem('vitepress-theme-appearance', appearance)
+        }, variant.appearance)
+      }
+      const page = await ctx.newPage()
+      const pageErrors = []
+      page.on('pageerror', err => pageErrors.push(err.message))
+      const response = await page.goto(new URL(route.url, origin).href, { waitUntil: 'networkidle' })
+      await page.evaluate(() => document.fonts.ready)
+      const metrics = await page.evaluate(() => {
+        const root = document.documentElement
+        const visibleStyle = selector => {
+          const el = document.querySelector(selector)
+          if (!el) return null
+          const style = getComputedStyle(el)
+          const rect = el.getBoundingClientRect()
+          return {
+            display: style.display, visibility: style.visibility,
+            opacity: style.opacity, color: style.color,
+            background: style.backgroundColor,
+            width: rect.width, height: rect.height
+          }
+        }
+        return {
+          osDark: matchMedia('(prefers-color-scheme: dark)').matches,
+          theme: root.classList.contains('dark') ? 'dark' : 'light',
+          scheme: getComputedStyle(root).colorScheme,
+          overflow: Math.max(0, root.scrollWidth - innerWidth),
+          heading: visibleStyle('h1'),
+          nav: visibleStyle('.VPNavBarTitle .title'),
+          action: visibleStyle('.xs-button.primary, .invite-sms-actions a'),
+          docNav: visibleStyle('.VPLocalNav'),
+          footer: visibleStyle('.VPFooter')
+        }
+      })
+      const label = variant.label + '/' + route.slug
+      if (!response?.ok()) failures.push(label + ': HTTP ' + response?.status())
+      if (!metrics.osDark || metrics.theme !== variant.theme)
+        failures.push(label + ': OS/theme mismatch ' + JSON.stringify(metrics))
+      const expectedScheme = variant.theme === 'dark' ? 'dark only' : 'light only'
+      if (metrics.scheme !== expectedScheme)
+        failures.push(label + ': browser may forcibly recolor website: ' + metrics.scheme)
+      if (metrics.overflow > 1) failures.push(label + ': horizontal overflow ' + metrics.overflow)
+      for (const key of ['heading', 'nav']) {
+        const el = metrics[key]
+        if (!el || el.display === 'none' || el.visibility === 'hidden' ||
+            Number(el.opacity) < .5 || el.width < 20 || el.height < 12)
+          failures.push(label + ': key content invisible ' + key + ' ' + JSON.stringify(el))
+      }
+      if (pageErrors.length) failures.push(label + ': browser exceptions ' + pageErrors.join(' | '))
+      if (route.slug === 'guide') {
+        const sidebarButton = page.locator('.VPLocalNav button.menu')
+        if (!(await sidebarButton.isVisible())) failures.push(label + ': document directory not visible')
+      }
+      const file = variant.label + '-' + route.slug + '.png'
+      await capture(page, file, false)
+      if ((variant.label === 'system-dark-auto' && route.slug === 'home') ||
+          (variant.label === 'android-force-dark-site-light' && route.slug === 'invite') ||
+          (variant.label === 'android-force-dark-site-dark' && route.slug === 'guide')) {
+        await printReference(page, variant.label + '-' + route.slug)
+      }
+      findings.push({ test: 'system-dark-mode', scenario: label, ...metrics })
+      await ctx.close()
+    }
+  }
+} finally {
+  await forcedBrowser.close()
+}
+
 const reduced = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: 'reduce' })
 const rmPage = await reduced.newPage()
 await rmPage.goto(origin, { waitUntil: 'networkidle' })
