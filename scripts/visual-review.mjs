@@ -676,7 +676,8 @@ try {
         })
         const expectedIconColor = variant.preference === 'dark' ? 'f1f3f5' : '17191d'
         if (!(await hamburger.isVisible()) || closedIcon.x < 0 ||
-            closedIcon.x + closedIcon.w > 392 || closedIcon.w < 40 || closedIcon.h < 40 ||
+            closedIcon.x + closedIcon.w > 392 || Math.abs(closedIcon.w - 44) > 1 ||
+            Math.abs(closedIcon.h - 44) > 1 || closedIcon.y < 5 || closedIcon.y > 20 ||
             closedIcon.iconWidth !== '21px' || closedIcon.iconHeight !== '21px' ||
             !closedIcon.image.includes(expectedIconColor) || !(/M4(?:%20| )6h16/.test(closedIcon.image)) ||
             closedIcon.iconVisibility !== 'visible' || closedIcon.ariaExpanded !== 'false')
