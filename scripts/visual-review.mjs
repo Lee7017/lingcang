@@ -677,6 +677,94 @@ try {
       await ctx.close()
     }
   }
+
+// 真实问题复现：手机系统深色且浏览器强制深色时，展开导航后
+// 右上角 X、菜单文字和外观开关仍要清晰可见，不允许半透明黑色卡片覆盖。
+for (const variant of [
+  { label: 'mobile-menu-system-dark', forced: false, appearance: null, theme: 'dark' },
+  { label: 'mobile-menu-force-dark-auto', forced: true, appearance: null, theme: 'dark' },
+  { label: 'mobile-menu-force-dark-light', forced: true, appearance: 'light', theme: 'light' },
+  { label: 'mobile-menu-force-dark-dark', forced: true, appearance: 'dark', theme: 'dark' }
+]) {
+  for (const width of [320, 390]) {
+    const activeBrowser = variant.forced ? forcedBrowser : browser
+    const ctx = await activeBrowser.newContext({
+      viewport: { width, height: 844 },
+      isMobile: true, hasTouch: true, deviceScaleFactor: 1, colorScheme: 'dark'
+    })
+    if (variant.appearance !== null) {
+      await ctx.addInitScript(value => {
+        localStorage.setItem('vitepress-theme-appearance', value)
+      }, variant.appearance)
+    }
+    const page = await ctx.newPage()
+    const errors = []
+    page.on('pageerror', err => errors.push(err.message))
+    await page.goto(new URL('guide/', origin).href, { waitUntil: 'networkidle' })
+    const hamburger = page.locator('.VPNavBarHamburger')
+    if (!(await hamburger.isVisible())) failures.push(variant.label + '/' + width + ': mobile navigation button missing')
+    await hamburger.click()
+    const screen = page.locator('.VPNavScreen')
+    await screen.waitFor({ state: 'visible' })
+    await page.waitForTimeout(300)
+    const metrics = await page.evaluate(() => {
+      const q = s => document.querySelector(s)
+      const style = s => {
+        const e = q(s), c = e && getComputedStyle(e)
+        return c ? {
+          color: c.color, fill: c.webkitTextFillColor,
+          bg: c.backgroundColor, opacity: c.opacity,
+          radius: c.borderRadius,
+          rect: (() => { const r=e.getBoundingClientRect();return { x:r.x, y:r.y, width:r.width, height:r.height }})()
+        } : null
+      }
+      const line = q('.VPNavBarHamburger .top')
+      return {
+        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+        panel: style('.VPNavScreen'),
+        brand: style('.VPNavBarTitle .title'),
+        menu: style('.VPNavScreenMenuLink'),
+        appearance: style('.VPNavScreenAppearance .text'),
+        switch: style('.VPNavScreenAppearance .VPSwitchAppearance'),
+        thumb: style('.VPNavScreenAppearance .VPSwitchAppearance .check'),
+        hamburgerLine: line && getComputedStyle(line).backgroundColor,
+        overflow: Math.max(0, document.documentElement.scrollWidth - innerWidth)
+      }
+    })
+    const label = variant.label + '/' + width
+    if (metrics.theme !== variant.theme) failures.push(label + ': unexpected theme')
+    if (!metrics.panel || metrics.panel.bg.startsWith('rgba(') ||
+        metrics.panel.radius !== '0px' || metrics.panel.rect.width < width - 2)
+      failures.push(label + ': navigation screen is not solid full-width ' + JSON.stringify(metrics.panel))
+    if (!metrics.menu || metrics.menu.fill !== metrics.brand.fill ||
+        metrics.menu.opacity !== '1')
+      failures.push(label + ': menu foreground differs from brand ' + JSON.stringify(metrics))
+    if (!metrics.appearance || metrics.appearance.fill !== metrics.brand.fill ||
+        !metrics.switch || !metrics.thumb)
+      failures.push(label + ': appearance control is invisible or inconsistent ' + JSON.stringify(metrics))
+    if (!metrics.hamburgerLine || metrics.hamburgerLine === 'rgba(0, 0, 0, 0)' ||
+        metrics.hamburgerLine !== metrics.brand.color)
+      failures.push(label + ': close icon invisible against header ' + JSON.stringify(metrics))
+    if (metrics.overflow > 1) failures.push(label + ': horizontal overflow ' + metrics.overflow)
+    if (await screen.locator('.VPNavScreenMenuLink').count() !== 6)
+      failures.push(label + ': missing main navigation links')
+    const appearance = screen.locator('.VPSwitchAppearance')
+    if (!(await appearance.isVisible())) failures.push(label + ': appearance switch hidden')
+    const filename = variant.label + '-' + width + '.png'
+    await capture(page, filename, false)
+    if (width === 390) await printReference(page, variant.label + '-390')
+    await appearance.click()
+    await page.waitForFunction(before => document.documentElement.classList.contains('dark') !== before,
+      variant.theme === 'dark', { timeout: 5000 })
+    if (!(await screen.isVisible())) failures.push(label + ': appearance toggling closed navigation')
+    await hamburger.click()
+    if (await screen.count()) failures.push(label + ': hamburger failed to close menu')
+    if (errors.length) failures.push(label + ': JS errors ' + errors.join(' | '))
+    findings.push({ test: 'mobile-nav-contrast', scenario: label, metrics })
+    await ctx.close()
+  }
+}
+
 } finally {
   await forcedBrowser.close()
 }

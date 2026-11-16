@@ -937,3 +937,129 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
     border-radius: 11px;
   }
 }
+
+/* 手机导航不用玻璃卡片：强制深色的移动浏览器可能分别重绘
+   半透明背景、链接文字和开关，造成深底黑字/黑色关闭图标。
+   用实色全屏菜单并明确指定交互控件的前景与背景。 */
+@media (max-width: 767px) {
+  .VPNavBar {
+    background: var(--vp-c-bg) !important;
+    border-bottom: 1px solid var(--vp-c-divider);
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+  .VPNavBarTitle .title,
+  .VPNavBarTitle .title span {
+    color: var(--vp-c-text-1) !important;
+    -webkit-text-fill-color: var(--vp-c-text-1);
+  }
+  .VPNavBarHamburger {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    color: var(--vp-c-text-1) !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .VPNavBarHamburger .top,
+  .VPNavBarHamburger .middle,
+  .VPNavBarHamburger .bottom,
+  .VPNavBarHamburger.active:hover .top,
+  .VPNavBarHamburger.active:hover .middle,
+  .VPNavBarHamburger.active:hover .bottom {
+    background-color: var(--vp-c-text-1) !important;
+  }
+  .VPNavBarHamburger:focus-visible {
+    outline: 2px solid var(--vp-c-text-1);
+    outline-offset: -3px;
+  }
+
+  .VPNavScreen {
+    padding: 0 20px;
+    color: var(--vp-c-text-1) !important;
+    background: var(--vp-c-bg) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .VPNavScreen > .container {
+    max-width: 420px;
+    padding: 14px 0 calc(32px + env(safe-area-inset-bottom));
+    background: transparent !important;
+  }
+  .VPNavScreenMenu {
+    background: transparent !important;
+  }
+  .VPNavScreenMenuLink,
+  .VPNavScreenMenuLink:hover,
+  .VPNavScreenMenuLink.active,
+  .VPNavScreenMenuLink span {
+    color: var(--vp-c-text-1) !important;
+    -webkit-text-fill-color: var(--vp-c-text-1);
+  }
+  .VPNavScreenMenuLink {
+    padding: 12px 3px;
+    line-height: 24px;
+    font-size: 15px;
+    font-weight: 570;
+    border-bottom: 1px solid var(--vp-c-divider);
+    background: transparent !important;
+    opacity: 1 !important;
+  }
+  .VPNavScreenMenuLink.active {
+    font-weight: 700;
+  }
+  .VPNavScreenAppearance {
+    margin-top: 18px !important;
+    padding: 10px 3px 12px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .VPNavScreenAppearance .text {
+    color: var(--vp-c-text-1) !important;
+    -webkit-text-fill-color: var(--vp-c-text-1);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .VPNavScreenAppearance .VPSwitchAppearance {
+    width: 48px;
+    height: 26px;
+    border: 1px solid var(--vp-c-divider) !important;
+    border-radius: 13px;
+    background: #cbd1d9 !important;
+  }
+  .dark .VPNavScreenAppearance .VPSwitchAppearance {
+    background: #586474 !important;
+    border-color: #778393 !important;
+  }
+  .VPNavScreenAppearance .VPSwitchAppearance .check {
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .22);
+  }
+  .dark .VPNavScreenAppearance .VPSwitchAppearance .check {
+    transform: translateX(22px) !important;
+  }
+  .VPNavScreenAppearance .VPSwitchAppearance .icon {
+    width: 20px;
+    height: 20px;
+  }
+  .VPNavScreenAppearance .VPSwitchAppearance .icon .sun,
+  .VPNavScreenAppearance .VPSwitchAppearance .icon .moon {
+    top: 4px;
+    left: 4px;
+    color: #20252b !important;
+  }
+  .VPNavScreenAppearance .VPSwitchAppearance:focus-visible {
+    outline: 2px solid var(--vp-c-text-1);
+    outline-offset: 3px;
+  }
+}
