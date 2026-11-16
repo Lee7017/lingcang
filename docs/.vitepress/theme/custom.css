@@ -950,25 +950,53 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
     color: var(--vp-c-text-1) !important;
     -webkit-text-fill-color: var(--vp-c-text-1);
   }
+  /*
+   * VitePress 原生三横线是三根 2px 的 CSS 背景色 span。
+   * 部分 Android 浏览器的系统/强制深色会把背景色重新处理，出现可点击
+   * 但看不到图标。改为固定前景色的 SVG 图像，避免图标取决于 span 背景。
+   * 同时使用可辨认的实色按钮底色，关闭和展开状态都保持高对比度。
+   */
   .VPNavBarHamburger {
+    position: relative;
     flex: 0 0 44px;
     width: 44px;
     height: 44px;
+    border: 1px solid #d1d5dc;
     border-radius: 10px;
-    color: var(--vp-c-text-1) !important;
+    background-color: #e6e9ef !important;
     -webkit-tap-highlight-color: transparent;
+    color-scheme: only light;
   }
-  .VPNavBarHamburger .top,
-  .VPNavBarHamburger .middle,
-  .VPNavBarHamburger .bottom,
-  .VPNavBarHamburger.active:hover .top,
-  .VPNavBarHamburger.active:hover .middle,
-  .VPNavBarHamburger.active:hover .bottom {
-    background-color: var(--vp-c-text-1) !important;
+  .dark .VPNavBarHamburger {
+    background-color: #363c46 !important;
+    border-color: #596373;
+    color-scheme: only dark;
+  }
+  /* VitePress 保留按钮交互与 aria-expanded，但不用它的细线绘制图标。 */
+  .VPNavBarHamburger > .container { visibility: hidden; }
+  .VPNavBarHamburger::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 21px;
+    height: 21px;
+    transform: translate(-50%, -50%);
+    background: center / 21px 21px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M4 6h16M4 12h16M4 18h16' fill='none' stroke='%2317191d' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+    pointer-events: none;
+  }
+  .dark .VPNavBarHamburger::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M4 6h16M4 12h16M4 18h16' fill='none' stroke='%23f1f3f5' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  }
+  .VPNavBarHamburger.active::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 5L19 19M19 5L5 19' fill='none' stroke='%2317191d' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  }
+  .dark .VPNavBarHamburger.active::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 5L19 19M19 5L5 19' fill='none' stroke='%23f1f3f5' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
   }
   .VPNavBarHamburger:focus-visible {
     outline: 2px solid var(--vp-c-text-1);
-    outline-offset: -3px;
+    outline-offset: 3px;
   }
 
   .VPNavScreen {

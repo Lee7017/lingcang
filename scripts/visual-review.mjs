@@ -658,11 +658,40 @@ try {
         failures.push(label + ': system color-scheme browser toolbar metadata missing')
       if (errors.length) failures.push(label + ': JS errors ' + errors.join(' | '))
 
-      // 页面本身以及用户特别指出的手机菜单「展开状态」分别截图。
+      // 以前只测试菜单展开后的 X，没有测试三横线本身是否能被看见。
+      // 现在针对闭合/展开两种 SVG 图标检查真正绘制的背景图、尺寸与颜色。
       await capture(page, variant.label + '-' + route.slug + '.png', false)
       if (route.slug === 'guide' || route.slug === 'home') {
         const hamburger = page.locator('.VPNavBarHamburger')
+        const closedIcon = await hamburger.evaluate(button => {
+          const rect = button.getBoundingClientRect()
+          const style = getComputedStyle(button)
+          const icon = getComputedStyle(button, '::after')
+          return {
+            x: rect.x, y: rect.y, w: rect.width, h: rect.height,
+            background: style.backgroundColor, border: style.borderTopColor,
+            image: icon.backgroundImage, iconWidth: icon.width, iconHeight: icon.height,
+            iconVisibility: icon.visibility, ariaExpanded: button.getAttribute('aria-expanded')
+          }
+        })
+        const expectedIconColor = variant.preference === 'dark' ? 'f1f3f5' : '17191d'
+        if (!(await hamburger.isVisible()) || closedIcon.x < 0 ||
+            closedIcon.x + closedIcon.w > 392 || closedIcon.w < 40 || closedIcon.h < 40 ||
+            closedIcon.iconWidth !== '21px' || closedIcon.iconHeight !== '21px' ||
+            !closedIcon.image.includes(expectedIconColor) || !closedIcon.image.includes('M4%206h16') ||
+            closedIcon.iconVisibility !== 'visible' || closedIcon.ariaExpanded !== 'false')
+          failures.push(label + ': closed hamburger icon is missing or invisible ' + JSON.stringify(closedIcon))
+        // 截图要在展开菜单之前拍摄，这正是用户反馈的问题状态。
+        await capture(page, variant.label + '-' + route.slug + '-hamburger-closed.png', false)
+        if (route.slug === 'guide' && variant.label !== 'forced-dark-system-light')
+          await printReference(page, variant.label + '-guide-hamburger-closed')
         await hamburger.click()
+        const openedIcon = await hamburger.evaluate(button => ({
+          image: getComputedStyle(button, '::after').backgroundImage,
+          ariaExpanded: button.getAttribute('aria-expanded')
+        }))
+        if (!openedIcon.image.includes('M5%205L19%2019') || openedIcon.ariaExpanded !== 'true')
+          failures.push(label + ': open hamburger icon did not change to a visible X ' + JSON.stringify(openedIcon))
         const screen = page.locator('.VPNavScreen')
         await screen.waitFor({ state: 'visible' })
         await page.waitForTimeout(300)
@@ -670,7 +699,7 @@ try {
           const root = document.documentElement
           const navbar = document.querySelector('.VPNavBar')
           const menu = document.querySelector('.VPNavScreen')
-          const close = document.querySelector('.VPNavBarHamburger .top')
+          const close = document.querySelector('.VPNavBarHamburger')
           const link = document.querySelector('.VPNavScreenMenuLink')
           const style = el => el && getComputedStyle(el)
           return {
@@ -678,7 +707,7 @@ try {
             dark: root.classList.contains('dark'),
             background: style(menu)?.backgroundColor,
             navbarBackground: style(navbar)?.backgroundColor,
-            closeColor: style(close)?.backgroundColor,
+            closeColor: close && getComputedStyle(close, '::after').backgroundImage,
             menuColor: style(link)?.color,
             brandColor: style(document.querySelector('.VPNavBarTitle .title'))?.color,
             linkCount: document.querySelectorAll('.VPNavScreenMenuLink').length,
@@ -689,8 +718,9 @@ try {
         })
         if (menu.appearanceCount || menu.linkCount !== 6)
           failures.push(label + ': old appearance control or missing menu links ' + JSON.stringify(menu))
-        if (menu.closeColor !== menu.brandColor || menu.menuColor !== menu.brandColor)
-          failures.push(label + ': mobile menu icons/text have inconsistent contrast ' + JSON.stringify(menu))
+        const expectedOpenColor = variant.preference === 'dark' ? 'f1f3f5' : '17191d'
+        if (!menu.closeColor?.includes(expectedOpenColor) || !menu.menuColor)
+          failures.push(label + ': mobile close X or text icon invisible ' + JSON.stringify(menu))
         if (!menu.background?.startsWith('rgb(') || menu.panelRadius !== '0px')
           failures.push(label + ': mobile menu background is translucent/rounded ' + JSON.stringify(menu))
         if (menu.overflow > 1) failures.push(label + ': mobile menu horizontal overflow')
