@@ -389,7 +389,7 @@ for (const item of [
   await page.getByLabel('昵称 必填').fill('测试用户')
   const smsHref = await page.locator('.invite-sms-actions a').getAttribute('href')
   if (smsHref !== 'sms:13231226535') failures.push('invite-iOS: SMS URL should only contain recipient')
-  if (!(await page.locator('.invite-hint').textContent())?.includes('iPhone / iPad'))
+  if (!(await page.locator('.invite-hint:not(.invite-desktop-hint)').textContent())?.includes('iPhone / iPad'))
     failures.push('invite-iOS: paste instructions missing')
   await ctx.close()
 }
