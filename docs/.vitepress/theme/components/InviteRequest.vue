@@ -101,6 +101,7 @@ function onSmsClick(event: MouseEvent) {
       </div>
 
       <div class="invite-copy-section">
+        <p class="invite-hint invite-desktop-hint">请在手机上打开本页面申请并发送短信；如果已在电脑填写，可复制短信内容后在手机上发送。</p>
         <div class="invite-sms-actions">
           <button class="xs-button secondary" type="button" @click="copyText('message', messageText)">
             <Check v-if="copied === 'message'" :size="16" /><Copy v-else :size="16" />

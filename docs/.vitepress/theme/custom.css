@@ -785,6 +785,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .invite-sms-actions .xs-button { flex: 1; min-width: 0; }
 .invite-sms-actions .xs-button.disabled { pointer-events: none; opacity: .5; }
 .invite-copy-section .invite-hint { margin-top: 10px; color: var(--xs-muted); font-size: 11px; line-height: 1.8; }
+.invite-copy-section .invite-desktop-hint { margin: 0 0 12px; font-size: 12px; line-height: 1.65; }
 .invite-copy-notice { color: var(--xs-muted); font-size: 12px; line-height: 1.7; }
 .invite-copy-notice:empty { display: none; }
 @media (max-width: 680px) {
@@ -820,6 +821,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   }
   .invite-sms-actions .xs-button svg { width: 15px; height: 15px; }
   .invite-copy-section .invite-hint { margin-top: 8px; }
+  .invite-copy-section .invite-desktop-hint { display: none; }
   .invite-copy-notice { font-size: 11px; }
 }
 

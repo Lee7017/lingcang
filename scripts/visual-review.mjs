@@ -255,6 +255,14 @@ for (const item of [
   if (!response?.ok()) failures.push(item.label + ': invite page HTTP ' + response?.status())
   const instructions = page.locator('.invite-panel')
   const content = await instructions.textContent()
+  const desktopHint = page.locator('.invite-desktop-hint')
+  if (item.width > 680) {
+    if (!(await desktopHint.isVisible()) ||
+        !(await desktopHint.textContent())?.includes('请在手机上打开本页面'))
+      failures.push(item.label + ': desktop must show SMS-on-phone advice before actions')
+  } else if (await desktopHint.isVisible()) {
+    failures.push(item.label + ': desktop-only SMS hint appears on mobile')
+  }
   if (await instructions.getByText('通过短信申请', { exact: true }).count() ||
       await instructions.getByText('短信由你本人确认发送').count())
     failures.push(item.label + ': removed explanatory heading remains')
