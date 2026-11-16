@@ -678,7 +678,7 @@ try {
         if (!(await hamburger.isVisible()) || closedIcon.x < 0 ||
             closedIcon.x + closedIcon.w > 392 || closedIcon.w < 40 || closedIcon.h < 40 ||
             closedIcon.iconWidth !== '21px' || closedIcon.iconHeight !== '21px' ||
-            !closedIcon.image.includes(expectedIconColor) || !closedIcon.image.includes('M4%206h16') ||
+            !closedIcon.image.includes(expectedIconColor) || !(/M4(?:%20| )6h16/.test(closedIcon.image)) ||
             closedIcon.iconVisibility !== 'visible' || closedIcon.ariaExpanded !== 'false')
           failures.push(label + ': closed hamburger icon is missing or invisible ' + JSON.stringify(closedIcon))
         // 截图要在展开菜单之前拍摄，这正是用户反馈的问题状态。
@@ -690,7 +690,7 @@ try {
           image: getComputedStyle(button, '::after').backgroundImage,
           ariaExpanded: button.getAttribute('aria-expanded')
         }))
-        if (!openedIcon.image.includes('M5%205L19%2019') || openedIcon.ariaExpanded !== 'true')
+        if (!(/M5(?:%20| )5L19(?:%20| )19/.test(openedIcon.image)) || openedIcon.ariaExpanded !== 'true')
           failures.push(label + ': open hamburger icon did not change to a visible X ' + JSON.stringify(openedIcon))
         const screen = page.locator('.VPNavScreen')
         await screen.waitFor({ state: 'visible' })
