@@ -582,189 +582,151 @@ for (const width of [320, 390, 768]) {
   await ctx.close()
 }
 
-// 系统深色模式 ≠ 网页手动深色：覆盖系统自动切换、系统深色 + 手动浅色，
-// 以及 Chromium/Android 的强制深色网页模式（会改变实际绘制颜色但不改变 computedStyle）。
+// 官网只跟随系统深浅色；即使 localStorage 里留着过去的手动选择，也不能覆盖系统。
+// 测试 VitePress 首屏、手机展开菜单和 Android/Chromium 强制深色网页渲染。
 const forcedBrowser = await chromium.launch({
   headless: true,
   args: ['--enable-features=WebContentsForceDark', '--force-dark-mode']
 })
 try {
-  const systemDarkCases = [
-    { label: 'system-dark-auto', forced: false, appearance: null, theme: 'dark' },
-    { label: 'system-dark-manual-light', forced: false, appearance: 'light', theme: 'light' },
-    { label: 'system-dark-manual-dark', forced: false, appearance: 'dark', theme: 'dark' },
-    { label: 'android-force-dark-site-light', forced: true, appearance: 'light', theme: 'light' },
-    { label: 'android-force-dark-site-dark', forced: true, appearance: 'dark', theme: 'dark' }
+  const systemModes = [
+    { label: 'system-light', forced: false, preference: 'light', legacy: 'dark' },
+    { label: 'system-dark', forced: false, preference: 'dark', legacy: 'light' },
+    { label: 'forced-dark-system-light', forced: true, preference: 'light', legacy: 'dark' },
+    { label: 'forced-dark-system-dark', forced: true, preference: 'dark', legacy: 'light' }
   ]
-  for (const variant of systemDarkCases) {
-    const activeBrowser = variant.forced ? forcedBrowser : browser
-    for (const route of [
-      { slug: 'home', url: '' },
-      { slug: 'download', url: 'download/' },
-      { slug: 'guide', url: 'guide/' },
-      { slug: 'invite', url: 'invite/' }
-    ]) {
-      const ctx = await activeBrowser.newContext({
+  const pages = [
+    { slug: 'home', url: '' },
+    { slug: 'download', url: 'download/' },
+    { slug: 'guide', url: 'guide/' },
+    { slug: 'demo', url: 'demo/' },
+    { slug: 'changelog', url: 'changelog/' },
+    { slug: 'about', url: 'about/' },
+    { slug: 'invite', url: 'invite/' }
+  ]
+  const switchSelector = '.VPNavScreenAppearance, .VPNavBarAppearance, .VPSwitchAppearance'
+  for (const variant of systemModes) {
+    const testBrowser = variant.forced ? forcedBrowser : browser
+    for (const route of pages) {
+      const ctx = await testBrowser.newContext({
         viewport: { width: 390, height: 844 },
-        isMobile: true,
-        hasTouch: true,
-        deviceScaleFactor: 1,
-        colorScheme: 'dark'
+        isMobile: true, hasTouch: true,
+        colorScheme: variant.preference,
+        deviceScaleFactor: 1
       })
-      if (variant.appearance !== null) {
-        await ctx.addInitScript((appearance) => {
-          localStorage.setItem('vitepress-theme-appearance', appearance)
-        }, variant.appearance)
-      }
+      await ctx.addInitScript(stale => {
+        localStorage.setItem('vitepress-theme-appearance', stale)
+      }, variant.legacy)
       const page = await ctx.newPage()
-      const pageErrors = []
-      page.on('pageerror', err => pageErrors.push(err.message))
+      const errors = []
+      page.on('pageerror', error => errors.push(error.message))
       const response = await page.goto(new URL(route.url, origin).href, { waitUntil: 'networkidle' })
       await page.evaluate(() => document.fonts.ready)
-      const metrics = await page.evaluate(() => {
+      const state = await page.evaluate(() => {
         const root = document.documentElement
-        const visibleStyle = selector => {
-          const el = document.querySelector(selector)
-          if (!el) return null
-          const style = getComputedStyle(el)
-          const rect = el.getBoundingClientRect()
-          return {
-            display: style.display, visibility: style.visibility,
-            opacity: style.opacity, color: style.color,
-            background: style.backgroundColor,
-            width: rect.width, height: rect.height
-          }
-        }
+        const heading = document.querySelector('h1')
+        const h1 = heading && getComputedStyle(heading)
+        const meta = [...document.querySelectorAll('meta[name="theme-color"]')].map(el => ({
+          media: el.media, color: el.content
+        }))
         return {
-          osDark: matchMedia('(prefers-color-scheme: dark)').matches,
+          systemDark: matchMedia('(prefers-color-scheme: dark)').matches,
           theme: root.classList.contains('dark') ? 'dark' : 'light',
           scheme: getComputedStyle(root).colorScheme,
+          heading: heading?.textContent?.trim() ?? '',
+          headingColor: h1?.color ?? '',
+          headingOpacity: h1?.opacity ?? '',
           overflow: Math.max(0, root.scrollWidth - innerWidth),
-          heading: visibleStyle('h1'),
-          nav: visibleStyle('.VPNavBarTitle .title'),
-          action: visibleStyle('.xs-button.primary, .invite-sms-actions a'),
-          docNav: visibleStyle('.VPLocalNav'),
-          footer: visibleStyle('.VPFooter')
+          switches: document.querySelectorAll('.VPNavScreenAppearance, .VPNavBarAppearance, .VPSwitchAppearance').length,
+          themeColors: meta
         }
       })
       const label = variant.label + '/' + route.slug
+      const expected = variant.preference
       if (!response?.ok()) failures.push(label + ': HTTP ' + response?.status())
-      if (!metrics.osDark || metrics.theme !== variant.theme)
-        failures.push(label + ': OS/theme mismatch ' + JSON.stringify(metrics))
-      const expectedScheme = variant.theme === 'dark' ? 'dark only' : 'light only'
-      if (metrics.scheme !== expectedScheme)
-        failures.push(label + ': browser may forcibly recolor website: ' + metrics.scheme)
-      if (metrics.overflow > 1) failures.push(label + ': horizontal overflow ' + metrics.overflow)
-      for (const key of ['heading', 'nav']) {
-        const el = metrics[key]
-        if (!el || el.display === 'none' || el.visibility === 'hidden' ||
-            Number(el.opacity) < .5 || el.width < 20 || el.height < 12)
-          failures.push(label + ': key content invisible ' + key + ' ' + JSON.stringify(el))
+      if (state.theme !== expected || state.systemDark !== (expected === 'dark'))
+        failures.push(label + ': system theme failed to override old preference ' + JSON.stringify(state))
+      if (state.scheme !== (expected + ' only'))
+        failures.push(label + ': CSS color scheme mismatch ' + state.scheme)
+      if (state.switches) failures.push(label + ': manual appearance switch still exists')
+      if (!state.heading || Number(state.headingOpacity) < .9)
+        failures.push(label + ': heading missing or too transparent')
+      if (state.overflow > 1) failures.push(label + ': horizontal overflow ' + state.overflow)
+      if (state.themeColors.length !== 2 ||
+          !state.themeColors.some(x => x.media === '(prefers-color-scheme: light)') ||
+          !state.themeColors.some(x => x.media === '(prefers-color-scheme: dark)'))
+        failures.push(label + ': system color-scheme browser toolbar metadata missing')
+      if (errors.length) failures.push(label + ': JS errors ' + errors.join(' | '))
+
+      // 页面本身以及用户特别指出的手机菜单「展开状态」分别截图。
+      await capture(page, variant.label + '-' + route.slug + '.png', false)
+      if (route.slug === 'guide' || route.slug === 'home') {
+        const hamburger = page.locator('.VPNavBarHamburger')
+        await hamburger.click()
+        const screen = page.locator('.VPNavScreen')
+        await screen.waitFor({ state: 'visible' })
+        await page.waitForTimeout(300)
+        const menu = await page.evaluate(() => {
+          const root = document.documentElement
+          const navbar = document.querySelector('.VPNavBar')
+          const menu = document.querySelector('.VPNavScreen')
+          const close = document.querySelector('.VPNavBarHamburger .top')
+          const link = document.querySelector('.VPNavScreenMenuLink')
+          const style = el => el && getComputedStyle(el)
+          return {
+            systemDark: matchMedia('(prefers-color-scheme: dark)').matches,
+            dark: root.classList.contains('dark'),
+            background: style(menu)?.backgroundColor,
+            navbarBackground: style(navbar)?.backgroundColor,
+            closeColor: style(close)?.backgroundColor,
+            menuColor: style(link)?.color,
+            brandColor: style(document.querySelector('.VPNavBarTitle .title'))?.color,
+            linkCount: document.querySelectorAll('.VPNavScreenMenuLink').length,
+            appearanceCount: document.querySelectorAll('.VPNavScreenAppearance, .VPSwitchAppearance').length,
+            panelRadius: style(menu)?.borderRadius,
+            overflow: Math.max(0, root.scrollWidth - innerWidth)
+          }
+        })
+        if (menu.appearanceCount || menu.linkCount !== 6)
+          failures.push(label + ': old appearance control or missing menu links ' + JSON.stringify(menu))
+        if (menu.closeColor !== menu.brandColor || menu.menuColor !== menu.brandColor)
+          failures.push(label + ': mobile menu icons/text have inconsistent contrast ' + JSON.stringify(menu))
+        if (!menu.background?.startsWith('rgb(') || menu.panelRadius !== '0px')
+          failures.push(label + ': mobile menu background is translucent/rounded ' + JSON.stringify(menu))
+        if (menu.overflow > 1) failures.push(label + ': mobile menu horizontal overflow')
+        await capture(page, variant.label + '-' + route.slug + '-menu-open.png', false)
+        if (route.slug === 'guide' && variant.label !== 'forced-dark-system-light')
+          await printReference(page, variant.label + '-guide-menu')
+        await hamburger.click()
+        await screen.waitFor({ state: 'detached', timeout: 4500 })
+        findings.push({ test: 'system-only-menu', label, ...menu })
       }
-      if (pageErrors.length) failures.push(label + ': browser exceptions ' + pageErrors.join(' | '))
-      if (route.slug === 'guide') {
-        const sidebarButton = page.locator('.VPLocalNav button.menu')
-        if (!(await sidebarButton.isVisible())) failures.push(label + ': document directory not visible')
-      }
-      const file = variant.label + '-' + route.slug + '.png'
-      await capture(page, file, false)
-      if ((variant.label === 'system-dark-auto' && route.slug === 'home') ||
-          (variant.label === 'android-force-dark-site-light' && route.slug === 'invite') ||
-          (variant.label === 'android-force-dark-site-dark' && route.slug === 'guide')) {
-        await printReference(page, variant.label + '-' + route.slug)
-      }
-      findings.push({ test: 'system-dark-mode', scenario: label, ...metrics })
+      findings.push({ test: 'system-only-theme', label, ...state })
       await ctx.close()
     }
   }
 
-// 真实问题复现：手机系统深色且浏览器强制深色时，展开导航后
-// 右上角 X、菜单文字和外观开关仍要清晰可见，不允许半透明黑色卡片覆盖。
-for (const variant of [
-  { label: 'mobile-menu-system-dark', forced: false, appearance: null, theme: 'dark' },
-  { label: 'mobile-menu-force-dark-auto', forced: true, appearance: null, theme: 'dark' },
-  { label: 'mobile-menu-force-dark-light', forced: true, appearance: 'light', theme: 'light' },
-  { label: 'mobile-menu-force-dark-dark', forced: true, appearance: 'dark', theme: 'dark' }
-]) {
-  for (const width of [320, 390]) {
-    const activeBrowser = variant.forced ? forcedBrowser : browser
-    const ctx = await activeBrowser.newContext({
-      viewport: { width, height: 844 },
-      isMobile: true, hasTouch: true, deviceScaleFactor: 1, colorScheme: 'dark'
+  // 在同一页面直接更改系统偏好：不刷新、不点击开关，配色和菜单仍应更新。
+  for (const initial of ['light', 'dark']) {
+    const ctx = await browser.newContext({
+      viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
+      colorScheme: initial
     })
-    if (variant.appearance !== null) {
-      await ctx.addInitScript(value => {
-        localStorage.setItem('vitepress-theme-appearance', value)
-      }, variant.appearance)
-    }
     const page = await ctx.newPage()
-    const errors = []
-    page.on('pageerror', err => errors.push(err.message))
     await page.goto(new URL('guide/', origin).href, { waitUntil: 'networkidle' })
-    const hamburger = page.locator('.VPNavBarHamburger')
-    if (!(await hamburger.isVisible())) failures.push(variant.label + '/' + width + ': mobile navigation button missing')
-    await hamburger.click()
-    const screen = page.locator('.VPNavScreen')
-    await screen.waitFor({ state: 'visible' })
-    await page.waitForTimeout(300)
-    const metrics = await page.evaluate(() => {
-      const q = s => document.querySelector(s)
-      const style = s => {
-        const e = q(s), c = e && getComputedStyle(e)
-        return c ? {
-          color: c.color, fill: c.webkitTextFillColor,
-          bg: c.backgroundColor, opacity: c.opacity,
-          radius: c.borderRadius,
-          rect: (() => { const r=e.getBoundingClientRect();return { x:r.x, y:r.y, width:r.width, height:r.height }})()
-        } : null
-      }
-      const line = q('.VPNavBarHamburger .top')
-      return {
-        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
-        panel: style('.VPNavScreen'),
-        brand: style('.VPNavBarTitle .title'),
-        menu: style('.VPNavScreenMenuLink'),
-        appearance: style('.VPNavScreenAppearance .text'),
-        switch: style('.VPNavScreenAppearance .VPSwitchAppearance'),
-        thumb: style('.VPNavScreenAppearance .VPSwitchAppearance .check'),
-        hamburgerLine: line && getComputedStyle(line).backgroundColor,
-        overflow: Math.max(0, document.documentElement.scrollWidth - innerWidth)
-      }
-    })
-    const label = variant.label + '/' + width
-    if (metrics.theme !== variant.theme) failures.push(label + ': unexpected theme')
-    if (!metrics.panel || metrics.panel.bg.startsWith('rgba(') ||
-        metrics.panel.radius !== '0px' || metrics.panel.rect.width < width - 2)
-      failures.push(label + ': navigation screen is not solid full-width ' + JSON.stringify(metrics.panel))
-    if (!metrics.menu || metrics.menu.fill !== metrics.brand.fill ||
-        metrics.menu.opacity !== '1')
-      failures.push(label + ': menu foreground differs from brand ' + JSON.stringify(metrics))
-    if (!metrics.appearance || metrics.appearance.fill !== metrics.brand.fill ||
-        !metrics.switch || !metrics.thumb)
-      failures.push(label + ': appearance control is invisible or inconsistent ' + JSON.stringify(metrics))
-    if (!metrics.hamburgerLine || metrics.hamburgerLine === 'rgba(0, 0, 0, 0)' ||
-        metrics.hamburgerLine !== metrics.brand.color)
-      failures.push(label + ': close icon invisible against header ' + JSON.stringify(metrics))
-    if (metrics.overflow > 1) failures.push(label + ': horizontal overflow ' + metrics.overflow)
-    if (await screen.locator('.VPNavScreenMenuLink').count() !== 6)
-      failures.push(label + ': missing main navigation links')
-    const appearance = screen.locator('.VPSwitchAppearance')
-    if (!(await appearance.isVisible())) failures.push(label + ': appearance switch hidden')
-    const filename = variant.label + '-' + width + '.png'
-    await capture(page, filename, false)
-    if (width === 390) await printReference(page, variant.label + '-390')
-    await appearance.click()
-    await page.waitForFunction(before => document.documentElement.classList.contains('dark') !== before,
-      variant.theme === 'dark', { timeout: 5000 })
-    if (!(await screen.isVisible())) failures.push(label + ': appearance toggling closed navigation')
-    await hamburger.click()
-    await screen.waitFor({ state: 'detached', timeout: 4000 })
-    if (errors.length) failures.push(label + ': JS errors ' + errors.join(' | '))
-    findings.push({ test: 'mobile-nav-contrast', scenario: label, metrics })
+    const flipped = initial === 'dark' ? 'light' : 'dark'
+    await page.emulateMedia({ colorScheme: flipped })
+    await page.waitForFunction(expected => (
+      document.documentElement.classList.contains('dark') === (expected === 'dark')
+    ), flipped, { timeout: 7000 })
+    const scheme = await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)
+    if (scheme !== flipped + ' only')
+      failures.push('system-toggle/' + initial + ': HTML class changed but color scheme did not')
+    if (await page.locator(switchSelector).count())
+      failures.push('system-toggle/' + initial + ': manual appearance control appeared')
+    await capture(page, 'system-changed-' + initial + '-to-' + flipped + '.png', false)
     await ctx.close()
   }
-}
-
 } finally {
   await forcedBrowser.close()
 }

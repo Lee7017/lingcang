@@ -11,12 +11,15 @@ export default defineConfig({
   // GitHub Pages 无法保证扩展名省略后的直访行为，使用 .html 文档路由
   cleanUrls: false,
   lastUpdated: true,
+  // 始终跟随系统深浅色：VitePress 不渲染电脑和手机的外观切换控件。
+  appearance: 'force-auto',
   ...(process.env.SITE_URL ? { sitemap: { hostname: process.env.SITE_URL } } : {}),
   head: [
     ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${base}favicon-32x32.png` }],
     ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}logo.svg` }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${base}apple-touch-icon.png` }],
-    ['meta', { name: 'theme-color', content: '#f1f2f5' }],
+    ['meta', { name: 'theme-color', content: '#f3f4f6', media: '(prefers-color-scheme: light)' }],
+    ['meta', { name: 'theme-color', content: '#15171b', media: '(prefers-color-scheme: dark)' }],
     ['meta', { name: 'description', content: '灵仓（LINGCANG）— 本地优先的 Markdown 笔记与资料管理工具' }]
   ],
   themeConfig: {
@@ -55,9 +58,6 @@ export default defineConfig({
     },
     outline: { level: [2, 3], label: '本页目录' },
     docFooter: { prev: '上一篇', next: '下一篇' },
-    darkModeSwitchLabel: '外观',
-    lightModeSwitchTitle: '切换为浅色模式',
-    darkModeSwitchTitle: '切换为深色模式',
     returnToTopLabel: '返回顶部',
     sidebarMenuLabel: '目录',
     footer: { copyright: 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.' }

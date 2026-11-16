@@ -639,8 +639,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 
 /* 与 VitePress 原生状态和导航结构一致；不移动导航项和页面主体。 */
 .VPNavBarMenuLink, .VPNavBarMenuGroup .text, .VPSidebarItem .link,
-.VPNavScreenMenuLink, .VPDocFooter .prev-next a,
-.VPNavBarAppearance button {
+.VPNavScreenMenuLink, .VPDocFooter .prev-next a {
   transition: color var(--xs-motion-fast) var(--xs-motion-ease),
     background-color var(--xs-motion-fast) var(--xs-motion-ease),
     border-color var(--xs-motion-fast) var(--xs-motion-ease),
@@ -667,9 +666,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   .text-link:hover svg { transform: translateX(3px); }
   .VPNavBarMenuLink:hover { box-shadow: inset 0 -2px 0 var(--xs-rule); }
   .VPNavBarMenuLink.active:hover { box-shadow: inset 0 -2px 0 var(--xs-ink); }
-  .VPNavBarAppearance button:hover {
-    box-shadow: 0 0 0 2px var(--xs-rule);
-  }
   .VPMenu a:hover { background: var(--xs-frost); }
   .VPSidebarItem .link:hover { background: var(--xs-frost-strong); }
 }
@@ -939,7 +935,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 }
 
 /* 手机导航不用玻璃卡片：强制深色的移动浏览器可能分别重绘
-   半透明背景、链接文字和开关，造成深底黑字/黑色关闭图标。
+   半透明背景和链接文字，造成深底黑字/黑色关闭图标。
    用实色全屏菜单并明确指定交互控件的前景与背景。 */
 @media (max-width: 767px) {
   .VPNavBar {
@@ -1012,54 +1008,5 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   .VPNavScreenMenuLink.active {
     font-weight: 700;
   }
-  .VPNavScreenAppearance {
-    margin-top: 18px !important;
-    padding: 10px 3px 12px !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-  .VPNavScreenAppearance .text {
-    color: var(--vp-c-text-1) !important;
-    -webkit-text-fill-color: var(--vp-c-text-1);
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .VPNavScreenAppearance .VPSwitchAppearance {
-    width: 48px;
-    height: 26px;
-    border: 1px solid var(--vp-c-divider) !important;
-    border-radius: 13px;
-    background: #cbd1d9 !important;
-  }
-  .dark .VPNavScreenAppearance .VPSwitchAppearance {
-    background: #586474 !important;
-    border-color: #778393 !important;
-  }
-  .VPNavScreenAppearance .VPSwitchAppearance .check {
-    top: 2px;
-    left: 2px;
-    width: 20px;
-    height: 20px;
-    background: #fff !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, .22);
-  }
-  .dark .VPNavScreenAppearance .VPSwitchAppearance .check {
-    transform: translateX(22px) !important;
-  }
-  .VPNavScreenAppearance .VPSwitchAppearance .icon {
-    width: 20px;
-    height: 20px;
-  }
-  .VPNavScreenAppearance .VPSwitchAppearance .icon .sun,
-  .VPNavScreenAppearance .VPSwitchAppearance .icon .moon {
-    top: 4px;
-    left: 4px;
-    color: #20252b !important;
-  }
-  .VPNavScreenAppearance .VPSwitchAppearance:focus-visible {
-    outline: 2px solid var(--vp-c-text-1);
-    outline-offset: 3px;
-  }
+
 }

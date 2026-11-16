@@ -1,5 +1,6 @@
 import type { Theme } from 'vitepress'
-import { h } from 'vue'
+import { h, onMounted, watch } from 'vue'
+import { useData } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import HomeLanding from './components/HomeLanding.vue'
 import DownloadCards from './components/DownloadCards.vue'
@@ -14,6 +15,16 @@ export default {
   Layout: () => h(DefaultTheme.Layout, null, {
     'layout-bottom': () => h(BackToTop)
   }),
+  setup() {
+    // VitePress 1.6.4 的 force-auto 使用系统媒体查询，但动态切换
+    // 不负责维护 html.dark；保留首屏脚本，再监听系统设置实时更新类名。
+    const { isDark } = useData()
+    onMounted(() => {
+      watch(isDark, enabled => {
+        document.documentElement.classList.toggle('dark', enabled)
+      }, { immediate: true })
+    })
+  },
   enhanceApp({ app }) {
     app.component('HomeLanding', HomeLanding)
     app.component('DownloadCards', DownloadCards)
