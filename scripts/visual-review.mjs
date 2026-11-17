@@ -73,13 +73,19 @@ for (const c of [
       supportCount: document.querySelectorAll('#ios-support').length,
       supportTitle: document.querySelector('.download-grid > .ios-support-card h2')?.textContent?.trim(),
       supportLink: document.querySelector('.download-grid > .ios-support-card a.ios-support-link')?.getAttribute('href'),
+      linkInHeader: !!document.querySelector('.download-grid > .ios-support-card .ios-card-heading > a.ios-support-link'),
       supporterArea: !!document.querySelector('.download-grid > .ios-support-card .ios-carousel'),
+      progressArea: !!document.querySelector('.download-grid > .ios-support-card .ios-progress-track'),
+      refreshButtonCount: document.querySelectorAll('.download-grid > .ios-support-card .ios-refresh').length,
+      removedCopyPresent: /已确认支持|手动刷新仅获取已发布的数据|自愿公开/.test(
+        document.querySelector('.download-grid > .ios-support-card')?.textContent || ''),
       schedule: document.querySelector('.download-grid > .ios-support-card .ios-frequency')?.textContent?.trim()
     }))
     if (iosCard.cardCount !== 4 || !iosCard.inlineSupport || iosCard.supportCount !== 1)
       failures.push(c.label + ': iOS support must replace the fourth download card without an extra block')
     if (iosCard.supportTitle !== 'iOS 开发者支持计划' || !iosCard.supporterArea ||
-        !iosCard.schedule?.includes('30 分钟'))
+        !iosCard.progressArea || !iosCard.schedule?.includes('30 分钟') ||
+        !iosCard.linkInHeader || iosCard.refreshButtonCount !== 0 || iosCard.removedCopyPresent)
       failures.push(c.label + ': iOS support card is missing its required content')
     if (iosCard.supportLink !== 'https://afdian.com/item/d9aa8642e2b411f181af52540025c377')
       failures.push(c.label + ': iOS support link is incorrect')

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { ArrowUpRight, ChevronLeft, ChevronRight, HeartHandshake, RefreshCw } from 'lucide-vue-next'
+import { ArrowUpRight, ChevronLeft, ChevronRight, HeartHandshake } from 'lucide-vue-next'
 
 interface PublicSupporter {
   name: string
@@ -18,7 +18,6 @@ interface IosSupportSnapshot {
 
 const SUPPORT_URL = 'https://afdian.com/item/d9aa8642e2b411f181af52540025c377'
 const snapshot = ref<IosSupportSnapshot | null>(null)
-const loading = ref(false)
 const error = ref('')
 const money = new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', minimumFractionDigits: 2 })
 
@@ -91,46 +90,40 @@ function parseSnapshot(value: unknown): IosSupportSnapshot {
   }
 }
 
-async function refresh() {
-  if (loading.value) return
-  loading.value = true
-  error.value = ''
+async function loadSnapshot() {
   try {
     const res = await fetch('https://raw.githubusercontent.com/Lee7017/lingcang-ota/main/support/ios.json?v=' + Date.now(), { cache: 'no-store' })
     if (!res.ok) throw new Error('HTTP ' + res.status)
     snapshot.value = parseSnapshot(await res.json())
   } catch {
-    error.value = snapshot.value ? '刷新失败，仍显示上次获取的数据。' : '进度加载失败，请稍后重试。'
-  } finally {
-    loading.value = false
+    error.value = '进度加载失败，请稍后重新打开页面。'
   }
 }
 
 watch(supporters, resetCarousel)
-onMounted(refresh)
+onMounted(loadSnapshot)
 onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
 </script>
 
 <template>
   <article id="ios-support" class="download-card ios-support-card" aria-labelledby="ios-support-title">
     <div class="ios-card-heading">
-      <div class="platform-icon ios-card-icon"><HeartHandshake :size="27" stroke-width="1.6" /></div>
-      <div class="ios-card-title">
-        <span>iOS / iPadOS</span>
-        <h2 id="ios-support-title">iOS 开发者支持计划</h2>
+      <div class="ios-card-intro">
+        <div class="platform-icon ios-card-icon"><HeartHandshake :size="27" stroke-width="1.6" /></div>
+        <div class="ios-card-title">
+          <span>iOS / iPadOS</span>
+          <h2 id="ios-support-title">iOS 开发者支持计划</h2>
+        </div>
       </div>
+      <a :href="SUPPORT_URL" class="xs-button primary ios-support-link" target="_blank" rel="noopener noreferrer">
+        前往支持 <ArrowUpRight :size="15" />
+      </a>
     </div>
 
     <div class="ios-funding" aria-live="polite">
       <div class="ios-funding-row">
-        <div class="ios-funding-amount">
-          <span>已确认支持</span>
-          <strong>{{ raised === null ? '尚未同步' : money.format(raised) }}</strong>
-        </div>
-        <div class="ios-funding-target">
-          <span>目标 {{ money.format(target) }}</span>
-          <strong>{{ configured ? percent.toFixed(1) + '%' : '待同步' }}</strong>
-        </div>
+        <span>筹集进度 · 目标 {{ money.format(target) }}</span>
+        <strong>{{ configured ? percent.toFixed(1) + '%' : '—' }}</strong>
       </div>
       <div class="ios-progress-track" role="progressbar" :aria-valuemin="0" :aria-valuemax="100"
         :aria-valuenow="configured ? Math.round(percent) : undefined"
@@ -142,12 +135,8 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
     <div class="ios-sync">
       <div class="ios-sync-line">
         <span>最近同步：{{ syncedText }}</span>
-        <button type="button" class="ios-refresh" :disabled="loading" @click="refresh"
-          :aria-label="loading ? '正在刷新支持进度' : '手动刷新支持进度'" title="刷新已发布的统计数据">
-          <RefreshCw :size="15" :class="{ 'ios-spinning': loading }" />
-        </button>
       </div>
-      <p class="ios-frequency">后台每 30 分钟尝试同步一次（可能延迟），手动刷新仅获取已发布的数据。</p>
+      <p class="ios-frequency">后台每 30 分钟尝试同步一次（可能延迟）。</p>
       <p v-if="error" class="ios-error" role="status">{{ error }}</p>
     </div>
 
@@ -161,7 +150,6 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
           <button type="button" aria-label="上一位支持者" @click="stepSupporter(-1)"><ChevronLeft :size="16" /></button>
           <button type="button" aria-label="下一位支持者" @click="stepSupporter(1)"><ChevronRight :size="16" /></button>
         </div>
-        <span v-else class="ios-carousel-note">自愿公开</span>
       </div>
       <div class="ios-carousel-viewport">
         <Transition name="ios-slide" mode="out-in">
@@ -173,39 +161,32 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
         </Transition>
       </div>
     </div>
-
-    <a :href="SUPPORT_URL" class="xs-button primary ios-support-link" target="_blank" rel="noopener noreferrer">
-      前往爱发电支持 <ArrowUpRight :size="16" />
-    </a>
   </article>
 </template>
 
 <style scoped>
 .ios-support-card { min-width:0; scroll-margin-top:105px; gap:0; }
-.ios-card-heading { display:flex; align-items:center; gap:13px; min-width:0; }
+.ios-card-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap; min-width:0; }
+.ios-card-intro { display:flex; align-items:center; gap:10px; flex:1 1 175px; min-width:0; }
 .ios-card-icon { width:48px; height:48px; flex:none; margin:0; border-radius:14px; }
 .ios-card-title { min-width:0; }
+.ios-support-link { min-height:46px; flex:none; margin-left:auto; padding:0 11px; font-size:11px; }
 .ios-card-title>span { display:block; color:var(--xs-muted); font-size:11px; margin-bottom:4px; }
 .ios-card-title h2 { font-size:19px; line-height:1.25; letter-spacing:-.035em; overflow-wrap:anywhere; }
 .ios-funding { margin-top:21px; }
-.ios-funding-row { display:flex; align-items:end; justify-content:space-between; gap:10px; }
-.ios-funding-amount, .ios-funding-target { display:flex; flex-direction:column; gap:5px; min-width:0; }
-.ios-funding-amount>span, .ios-funding-target>span { color:var(--xs-muted); font-size:11px; }
-.ios-funding-amount>strong { font-size:clamp(18px,2.2vw,24px); font-weight:780; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
-.ios-funding-target { text-align:right; }
-.ios-funding-target>strong { font-size:14px; font-weight:760; font-variant-numeric:tabular-nums; }
+.ios-funding-row { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.ios-funding-row>span { color:var(--xs-muted); font-size:11px; }
+.ios-funding-row>strong { font-size:14px; font-weight:760; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .ios-progress-track { height:9px; margin-top:11px; border-radius:999px; overflow:hidden; background:var(--xs-rule); }
 .ios-progress-fill { height:100%; background:var(--xs-ink); border-radius:inherit; transition:width .4s ease; }
 .ios-sync { margin-top:17px; }
-.ios-sync-line { display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--xs-muted); font-size:11px; }
-.ios-refresh { width:29px; height:29px; display:grid; place-items:center; flex:none; border:1px solid var(--xs-rule); border-radius:8px; color:var(--xs-ink); background:var(--xs-soft); cursor:pointer; }
-.ios-refresh:disabled { opacity:.5; cursor:wait; }
+.ios-sync-line { color:var(--xs-muted); font-size:11px; }
 .ios-frequency { margin:5px 0 0!important; color:var(--xs-muted); font-size:11px!important; line-height:1.65!important; }
 .ios-error { margin:7px 0 0!important; color:var(--xs-muted); font-size:11px!important; }
 .ios-carousel { margin-top:19px; padding-top:15px; border-top:1px solid var(--xs-rule); min-width:0; }
 .ios-carousel-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .ios-carousel-heading h3 { font-size:13px; font-weight:740; }
-.ios-carousel-note, .ios-carousel-controls>span { font-size:10px; color:var(--xs-muted); }
+.ios-carousel-controls>span { font-size:10px; color:var(--xs-muted); }
 .ios-carousel-controls { display:flex; align-items:center; gap:6px; }
 .ios-carousel-controls button { display:grid; place-items:center; width:25px; height:25px; border:1px solid var(--xs-rule); border-radius:7px; background:var(--xs-soft); color:var(--xs-ink); cursor:pointer; }
 .ios-carousel-viewport { position:relative; min-height:49px; margin-top:9px; overflow:hidden; }
@@ -213,12 +194,9 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
 .ios-supporter-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ios-supporter strong { font-variant-numeric:tabular-nums; white-space:nowrap; }
 .ios-support-card .ios-support-empty { display:flex; align-items:center; min-height:45px; padding:10px 12px; margin:0; color:var(--xs-muted); background:var(--xs-soft); border:1px dashed var(--xs-rule); border-radius:10px; font-size:11px; line-height:1.5; }
-.ios-support-link { width:100%; min-height:46px; margin-top:auto; display:flex; align-items:center; justify-content:center; gap:8px; }
 .ios-slide-enter-active,.ios-slide-leave-active { transition:opacity .2s ease,transform .2s ease; }
 .ios-slide-enter-from { opacity:0; transform:translateX(14px); }
 .ios-slide-leave-to { opacity:0; transform:translateX(-14px); }
-.ios-spinning { animation:ios-spin 1s linear infinite; }
-@keyframes ios-spin { to { transform:rotate(360deg); } }
 @media (max-width:680px) {
   .ios-card-title h2 { font-size:18px; }
   .ios-funding { margin-top:17px; }
@@ -226,6 +204,5 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
 }
 @media (prefers-reduced-motion:reduce) {
   .ios-progress-fill,.ios-slide-enter-active,.ios-slide-leave-active { transition:none; }
-  .ios-spinning { animation:none; }
 }
 </style>
