@@ -108,9 +108,9 @@ onMounted(loadSnapshot)
           <h2 id="ios-support-title">iOS 开发者支持计划</h2>
         </div>
       </div>
-      <a :href="SUPPORT_URL" class="xs-button primary ios-support-link" target="_blank" rel="noopener noreferrer">
+      <a :href="SUPPORT_URL" class="ios-support-link" target="_blank" rel="noopener noreferrer">
         <span>前往支持</span>
-        <span class="ios-support-link-arrow"><ArrowUpRight :size="16" stroke-width="2.3" /></span>
+        <span class="ios-support-link-arrow"><ArrowUpRight :size="14" stroke-width="2" /></span>
       </a>
     </div>
 
@@ -163,11 +163,10 @@ onMounted(loadSnapshot)
 .ios-card-intro { display:flex; align-items:center; gap:10px; min-width:0; }
 .ios-card-icon { width:45px; height:45px; flex:none; margin:0; border-radius:13px; }
 .ios-card-title { min-width:0; }
-.ios-support-link { min-height:46px; height:46px; min-width:0; flex:none; padding:0 8px 0 14px; gap:8px; font-size:12px; font-weight:760; letter-spacing:.01em; box-shadow:inset 0 1px rgba(255,255,255,.22),0 8px 19px rgba(15,18,25,.13); }
-.ios-support-link-arrow { display:grid; place-items:center; width:28px; height:28px; border-radius:9px; background:rgba(255,255,255,.17); box-shadow:inset 0 1px rgba(255,255,255,.16); transition:transform .18s ease,background-color .18s ease; }
-.ios-support-link:hover .ios-support-link-arrow { transform:translate(1px,-1px); background:rgba(255,255,255,.25); }
-:global(.dark) .ios-support-link-arrow { background:rgba(18,21,27,.10); box-shadow:inset 0 1px rgba(18,21,27,.06); }
-:global(.dark) .ios-support-link:hover .ios-support-link-arrow { background:rgba(18,21,27,.18); }
+.ios-support-link { display:inline-flex; align-items:center; justify-content:center; flex:none; min-height:32px; height:32px; padding:0 10px 0 12px; gap:6px; margin:0; color:var(--xs-ink)!important; border:1px solid var(--xs-rule); border-radius:999px; background:var(--xs-frost-strong); font-size:11px; font-weight:680; line-height:1; white-space:nowrap; text-decoration:none!important; box-shadow:0 2px 6px rgba(15,18,25,.035),inset 0 1px var(--xs-glow); transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease; }
+.ios-support-link:hover { color:var(--xs-ink)!important; border-color:var(--xs-border); background:var(--xs-soft); box-shadow:0 3px 9px rgba(15,18,25,.06); }
+.ios-support-link-arrow { display:grid; place-items:center; width:14px; height:14px; flex:none; transition:transform .16s ease; }
+.ios-support-link:hover .ios-support-link-arrow { transform:translate(1px,-1px); }
 .ios-support-link:focus-visible { outline:2px solid var(--xs-ink); outline-offset:3px; }
 .ios-card-title>span { display:block; color:var(--xs-muted); font-size:11px; margin-bottom:4px; }
 .ios-card-title h2 { font-size:19px; line-height:1.25; letter-spacing:-.035em; overflow-wrap:anywhere; }
@@ -194,8 +193,7 @@ onMounted(loadSnapshot)
 @media (max-width:680px) {
   .ios-sync-line { font-size:10px; }
   .ios-card-title h2 { font-size:17px; }
-  .ios-support-link { padding-left:10px; font-size:11px; gap:5px; }
-  .ios-support-link-arrow { width:25px; height:25px; border-radius:8px; }
+  .ios-support-link { padding:0 9px 0 10px; }
   .ios-funding { margin-top:17px; }
   .ios-carousel { margin-top:17px; }
   .ios-danmaku-panel { height:105px; }
