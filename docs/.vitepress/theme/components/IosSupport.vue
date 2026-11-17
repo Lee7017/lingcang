@@ -135,8 +135,8 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
     <div class="ios-sync">
       <div class="ios-sync-line">
         <span>最近同步：{{ syncedText }}</span>
+        <span>后台每 30 分钟更新数据</span>
       </div>
-      <p class="ios-frequency">后台每 30 分钟尝试同步一次（可能延迟）。</p>
       <p v-if="error" class="ios-error" role="status">{{ error }}</p>
     </div>
 
@@ -180,8 +180,7 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
 .ios-progress-track { height:9px; margin-top:11px; border-radius:999px; overflow:hidden; background:var(--xs-rule); }
 .ios-progress-fill { height:100%; background:var(--xs-ink); border-radius:inherit; transition:width .4s ease; }
 .ios-sync { margin-top:17px; }
-.ios-sync-line { color:var(--xs-muted); font-size:11px; }
-.ios-frequency { margin:5px 0 0!important; color:var(--xs-muted); font-size:11px!important; line-height:1.65!important; }
+.ios-sync-line { display:flex; align-items:center; justify-content:space-between; gap:8px; white-space:nowrap; color:var(--xs-muted); font-size:11px; line-height:1.65; }
 .ios-error { margin:7px 0 0!important; color:var(--xs-muted); font-size:11px!important; }
 .ios-carousel { margin-top:19px; padding-top:15px; border-top:1px solid var(--xs-rule); min-width:0; }
 .ios-carousel-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; }
@@ -198,10 +197,12 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
 .ios-slide-enter-from { opacity:0; transform:translateX(14px); }
 .ios-slide-leave-to { opacity:0; transform:translateX(-14px); }
 @media (max-width:680px) {
+  .ios-sync-line { font-size:10px; }
   .ios-card-title h2 { font-size:18px; }
   .ios-funding { margin-top:17px; }
   .ios-carousel { margin-top:15px; }
 }
+@media (max-width:380px) { .ios-sync-line { font-size:9px; gap:4px; } }
 @media (prefers-reduced-motion:reduce) {
   .ios-progress-fill,.ios-slide-enter-active,.ios-slide-leave-active { transition:none; }
 }
