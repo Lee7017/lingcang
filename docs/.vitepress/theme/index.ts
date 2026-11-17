@@ -4,6 +4,7 @@ import { useData } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import HomeLanding from './components/HomeLanding.vue'
 import DownloadCards from './components/DownloadCards.vue'
+import IosSupport from './components/IosSupport.vue'
 import DemoNotice from './components/DemoNotice.vue'
 import ScreenshotPage from './components/ScreenshotPage.vue'
 import InviteRequest from './components/InviteRequest.vue'
@@ -28,6 +29,7 @@ export default {
   enhanceApp({ app }) {
     app.component('HomeLanding', HomeLanding)
     app.component('DownloadCards', DownloadCards)
+    app.component('IosSupport', IosSupport)
     app.component('DemoNotice', DemoNotice)
     app.component('ScreenshotPage', ScreenshotPage)
     app.component('InviteRequest', InviteRequest)
