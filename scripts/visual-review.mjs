@@ -97,8 +97,8 @@ for (const c of [
       failures.push(c.label + ': iOS support link is incorrect')
     findings.push({ test: 'ios-support-in-grid-' + c.label, ...iosCard })
   }
-  // 仅在 Playwright 内模拟“已授权公示”的测试数据，绝不写入官网或公开 JSON。
-  // 同时检查桌面三行、手机两行的右往左弹幕，并保留检查截图供人工复核。
+  // 仅在 Playwright 内模拟已授权公示的测试数据；不写入公开 JSON。
+  // 检查桌面三行、手机两行，且同一轨道的弹幕不会叠在一起。
   if (c.label === 'downloads-desktop' || c.label === 'downloads-mobile') {
     const mock = {
       status: 'live', target: 750, raised: 99, supporterCount: 9,
@@ -118,29 +118,40 @@ for (const c of [
     await demoPage.route('**/Lee7017/lingcang-ota/main/support/ios.json*',
       route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mock) }))
     await demoPage.goto(new URL('download/', origin).href, { waitUntil: 'networkidle', timeout: 45000 })
-    await demoPage.locator('.ios-danmaku-chip').first().waitFor({ timeout: 8000 })
-    const geometry = await demoPage.evaluate(() => {
+    const layoutSelector = c.mobile ? '.ios-danmaku-layout--mobile' : '.ios-danmaku-layout--desktop'
+    const tracks = demoPage.locator(layoutSelector + ' .ios-danmaku-track')
+    await tracks.first().waitFor({ timeout: 8000 })
+    const geometry = await demoPage.evaluate((selector) => {
       const panel = document.querySelector('.ios-danmaku-panel')
-      const items = [...document.querySelectorAll('.ios-danmaku-chip')]
+      const tracks = [...document.querySelectorAll(selector + ' .ios-danmaku-track')]
+      const items = [...document.querySelectorAll(selector + ' .ios-danmaku-batch:first-child .ios-danmaku-chip')]
+      const groups = [...document.querySelectorAll(selector + ' .ios-danmaku-batch')]
       return {
         count: items.length,
+        laneCount: tracks.length,
         panelHeight: Math.round(panel.getBoundingClientRect().height),
-        lanes: [...new Set(items.map(el => Math.round(el.getBoundingClientRect().top)))].sort(),
-        animations: items.map(el => getComputedStyle(el).animationName),
+        animations: tracks.map(el => getComputedStyle(el).animationName),
+        duplicateGroups: groups.length,
         titleRemoved: !document.querySelector('.ios-carousel h3'),
         supportLinkInHeader: !!document.querySelector('.ios-card-heading .ios-support-link'),
-        horizontalOverflow: Math.max(0, document.documentElement.scrollWidth - innerWidth)
+        supportActionHeight: Math.round(document.querySelector('.ios-support-link').getBoundingClientRect().height),
+        horizontalOverflow: Math.max(0, document.documentElement.scrollWidth - innerWidth),
+        minGap: Math.min(...tracks.map(track => {
+          const visibleChips = [...track.querySelectorAll('.ios-danmaku-chip')].map(x => x.getBoundingClientRect())
+          return Math.min(...visibleChips.slice(1).map((r, index) => r.left - visibleChips[index].right))
+        }))
       }
-    })
-    const firstChip = demoPage.locator('.ios-danmaku-chip').first()
-    const startX = (await firstChip.boundingBox())?.x
+    }, layoutSelector)
+    const firstTrack = tracks.first()
+    const startX = (await firstTrack.boundingBox())?.x
     await demoPage.waitForTimeout(350)
-    const endX = (await firstChip.boundingBox())?.x
-    if (geometry.count !== 9 || geometry.lanes.length !== (c.mobile ? 2 : 3) ||
+    const endX = (await firstTrack.boundingBox())?.x
+    if (geometry.count !== 9 || geometry.laneCount !== (c.mobile ? 2 : 3) ||
       !geometry.titleRemoved || !geometry.supportLinkInHeader ||
-      geometry.horizontalOverflow > 2 || geometry.animations.some(name => !name.includes('ios-danmaku-fly')) ||
+      geometry.supportActionHeight !== 32 || geometry.horizontalOverflow > 2 ||
+      geometry.minGap < 6 || geometry.animations.some(name => !name.includes('ios-danmaku-flow')) ||
       !(typeof startX === 'number' && typeof endX === 'number' && endX < startX))
-      failures.push(c.label + ': horizontal supporter danmaku failed layout or movement')
+      failures.push(c.label + ': supporter danmaku failed horizontal layout, spacing, or movement')
     await demoPage.locator('.ios-support-card').screenshot({
       path: path.join(output, 'ios-danmaku-' + (c.mobile ? 'mobile' : 'desktop') + '.png'),
       animations: 'allow'

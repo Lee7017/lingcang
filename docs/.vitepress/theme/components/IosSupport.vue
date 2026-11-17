@@ -36,27 +36,11 @@ const syncedText = computed(() => {
   }).format(date)
 })
 
-// 一条支持记录对应一枚弹幕，桌面三行、手机两行，不生成假支持者。
-const danmaku = computed(() => supporters.value.map((supporter, index, list) => {
-  function layout(rows: number) {
-    const lane = index % rows
-    const order = Math.floor(index / rows)
-    const size = Math.floor((list.length - 1 - lane) / rows) + 1
-    const duration = Math.max(20, size * 9)
-    return { lane, duration, delay: -(1.5 + lane * 4.7 + order * duration / size) }
-  }
-  const desktop = layout(3)
-  const mobile = layout(2)
-  return {
-    ...supporter,
-    topDesktop: (13 + desktop.lane * 43) + 'px',
-    topMobile: (12 + mobile.lane * 42) + 'px',
-    durationDesktop: desktop.duration + 's',
-    durationMobile: mobile.duration + 's',
-    delayDesktop: desktop.delay + 's',
-    delayMobile: mobile.delay + 's'
-  }
-}))
+// 按真实授权支持者分配弹幕轨道。复制可见内容仅用于无缝循环，不增加统计人数。
+const desktopLanes = computed(() => Array.from({ length: 3 }, (_, row) =>
+  supporters.value.filter((_, index) => index % 3 === row)))
+const mobileLanes = computed(() => Array.from({ length: 2 }, (_, row) =>
+  supporters.value.filter((_, index) => index % 2 === row)))
 
 function parseSnapshot(value: unknown): IosSupportSnapshot {
   if (!value || typeof value !== 'object') throw new Error('数据格式不正确')
@@ -136,19 +120,32 @@ onMounted(loadSnapshot)
 
     <div class="ios-carousel" role="region" aria-label="公开支持者弹幕">
       <div class="ios-danmaku-panel">
-        <template v-if="danmaku.length">
-          <div v-for="(supporter, index) in danmaku" :key="index"
-            class="ios-danmaku-chip"
-            :style="{
-              '--top-desktop': supporter.topDesktop,
-              '--top-mobile': supporter.topMobile,
-              '--duration-desktop': supporter.durationDesktop,
-              '--duration-mobile': supporter.durationMobile,
-              '--delay-desktop': supporter.delayDesktop,
-              '--delay-mobile': supporter.delayMobile
-            }">
-            <span class="ios-danmaku-name">{{ supporter.name }}</span>
-            <span class="ios-danmaku-amount">{{ money.format(supporter.amount) }}</span>
+        <template v-if="supporters.length">
+          <div class="ios-danmaku-layout ios-danmaku-layout--desktop">
+            <div v-for="(lane, row) in desktopLanes" :key="'desktop-' + row" class="ios-danmaku-lane">
+              <div v-if="lane.length" class="ios-danmaku-track"
+                :style="{ '--scroll-duration': (lane.length * 8 + 4) + 's', '--scroll-delay': -(row * 2.5) + 's' }">
+                <div v-for="copy in 4" :key="copy" class="ios-danmaku-batch" :aria-hidden="copy > 1 ? 'true' : undefined">
+                  <span v-for="(supporter, index) in lane" :key="index" class="ios-danmaku-chip">
+                    <span class="ios-danmaku-name">{{ supporter.name }}</span>
+                    <span class="ios-danmaku-amount">{{ money.format(supporter.amount) }}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ios-danmaku-layout ios-danmaku-layout--mobile">
+            <div v-for="(lane, row) in mobileLanes" :key="'mobile-' + row" class="ios-danmaku-lane">
+              <div v-if="lane.length" class="ios-danmaku-track"
+                :style="{ '--scroll-duration': (lane.length * 8 + 4) + 's', '--scroll-delay': -(row * 3.1) + 's' }">
+                <div v-for="copy in 4" :key="copy" class="ios-danmaku-batch" :aria-hidden="copy > 1 ? 'true' : undefined">
+                  <span v-for="(supporter, index) in lane" :key="index" class="ios-danmaku-chip">
+                    <span class="ios-danmaku-name">{{ supporter.name }}</span>
+                    <span class="ios-danmaku-amount">{{ money.format(supporter.amount) }}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </template>
         <div v-else class="ios-danmaku-empty">暂无已授权公开的支持者</div>
@@ -181,14 +178,19 @@ onMounted(loadSnapshot)
 .ios-error { margin:7px 0 0!important; color:var(--xs-muted); font-size:11px!important; }
 .ios-carousel { margin-top:20px; min-width:0; }
 .ios-danmaku-panel { position:relative; overflow:hidden; height:145px; min-width:0; isolation:isolate; border:1px solid var(--xs-rule); border-radius:14px; background:var(--xs-soft); }
-.ios-danmaku-panel::before,.ios-danmaku-panel::after { content:''; position:absolute; top:0; bottom:0; width:24px; z-index:1; pointer-events:none; }
+.ios-danmaku-panel::before,.ios-danmaku-panel::after { content:''; position:absolute; top:0; bottom:0; width:20px; z-index:2; pointer-events:none; }
 .ios-danmaku-panel::before { left:0; background:linear-gradient(to right,var(--xs-soft),transparent); }
 .ios-danmaku-panel::after { right:0; background:linear-gradient(to left,var(--xs-soft),transparent); }
-.ios-danmaku-chip { position:absolute; top:var(--top-desktop); left:100%; display:inline-flex; align-items:center; gap:11px; height:32px; max-width:none; padding:0 13px; border:1px solid var(--xs-rule); border-radius:999px; color:var(--xs-ink); background:var(--xs-frost-strong); box-shadow:0 2px 8px rgba(15,18,28,.055),inset 0 1px var(--xs-glow); white-space:nowrap; font-size:11px; will-change:left,transform; animation:ios-danmaku-fly var(--duration-desktop) linear infinite; animation-delay:var(--delay-desktop); }
-.ios-danmaku-name { font-weight:700; }
-.ios-danmaku-amount { color:var(--xs-muted); font-size:10px; font-variant-numeric:tabular-nums; }
-@keyframes ios-danmaku-fly { from { left:100%; transform:translateX(0); } to { left:0; transform:translateX(-100%); } }
-.ios-danmaku-panel:hover .ios-danmaku-chip,.ios-danmaku-panel:focus-within .ios-danmaku-chip { animation-play-state:paused; }
+.ios-danmaku-layout { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:space-evenly; }
+.ios-danmaku-layout--mobile { display:none; }
+.ios-danmaku-lane { position:relative; overflow:hidden; height:32px; min-width:0; flex:none; }
+.ios-danmaku-track { display:flex; align-items:center; gap:14px; width:max-content; height:32px; animation:ios-danmaku-flow var(--scroll-duration) linear infinite; animation-delay:var(--scroll-delay); will-change:transform; }
+.ios-danmaku-batch { display:flex; align-items:center; gap:14px; flex:none; }
+.ios-danmaku-chip { display:inline-flex; align-items:center; gap:11px; height:32px; max-width:240px; flex:none; padding:0 13px; border:1px solid var(--xs-rule); border-radius:999px; color:var(--xs-ink); background:var(--xs-frost-strong); box-shadow:0 2px 8px rgba(15,18,28,.055),inset 0 1px var(--xs-glow); white-space:nowrap; font-size:11px; }
+.ios-danmaku-name { min-width:0; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:700; }
+.ios-danmaku-amount { color:var(--xs-muted); font-size:10px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+@keyframes ios-danmaku-flow { from { transform:translateX(0); } to { transform:translateX(calc(-25% - 3.5px)); } }
+.ios-danmaku-panel:hover .ios-danmaku-track,.ios-danmaku-panel:focus-within .ios-danmaku-track { animation-play-state:paused; }
 .ios-danmaku-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--xs-muted); font-size:11px; }
 @media (max-width:680px) {
   .ios-sync-line { font-size:10px; }
@@ -197,12 +199,16 @@ onMounted(loadSnapshot)
   .ios-funding { margin-top:17px; }
   .ios-carousel { margin-top:17px; }
   .ios-danmaku-panel { height:105px; }
-  .ios-danmaku-chip { top:var(--top-mobile); animation-duration:var(--duration-mobile); animation-delay:var(--delay-mobile); }
+  .ios-danmaku-layout--desktop { display:none; }
+  .ios-danmaku-layout--mobile { display:flex; }
 }
 @media (max-width:380px) { .ios-sync-line { font-size:9px; gap:4px; } }
 @media (prefers-reduced-motion:reduce) {
   .ios-progress-fill,.ios-support-link-arrow { transition:none; }
-  .ios-danmaku-panel { display:flex; align-items:flex-start; flex-wrap:wrap; gap:8px; padding:11px; overflow:auto; }
-  .ios-danmaku-chip { position:static; animation:none; transform:none; flex:none; }
+  .ios-danmaku-panel { overflow:auto; }
+  .ios-danmaku-layout { position:static; inset:auto; gap:8px; padding:11px; }
+  .ios-danmaku-lane { height:auto; min-height:32px; }
+  .ios-danmaku-track { width:max-content; animation:none; transform:none; }
+  .ios-danmaku-batch:not(:first-child) { display:none; }
 }
 </style>
