@@ -143,7 +143,10 @@ onMounted(refresh)
 
     <div class="ios-support-controls">
       <div class="ios-sync-info"><CheckCircle2 :size="16" />
-        <span>最近同步：{{ syncedText }}</span>
+        <div class="ios-sync-details">
+          <span>最近公开数据更新：{{ syncedText }}</span>
+          <span>后台计划每 30 分钟尝试同步一次（可能延迟）；手动刷新仅获取已发布数据。</span>
+        </div>
       </div>
       <button type="button" class="xs-button secondary ios-refresh" :disabled="loading"
         @click="refresh" :aria-label="loading ? '正在刷新支持进度' : '手动刷新支持进度'">
@@ -205,7 +208,9 @@ onMounted(refresh)
 .ios-progress-fill { height:100%; background:var(--xs-ink); border-radius:inherit; transition:width .4s ease; }
 .ios-support-progress p { margin-top:10px; font-size:11px; line-height:1.7; color:var(--xs-muted); }
 .ios-support-controls { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; padding:21px 0; border-bottom:1px solid var(--xs-rule); }
-.ios-sync-info { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--xs-muted); }
+.ios-sync-info { display:flex; align-items:flex-start; gap:8px; flex:1 1 290px; min-width:0; font-size:11px; color:var(--xs-muted); }
+.ios-sync-info>svg { flex:none; margin-top:2px; }
+.ios-sync-details { display:flex; flex-direction:column; gap:4px; line-height:1.65; }
 .ios-refresh { min-height:38px; padding:0 13px; font-size:12px; cursor:pointer; }
 .ios-refresh:disabled { opacity:.6; cursor:wait; }
 .ios-spinning { animation:ios-spin 1s linear infinite; }
