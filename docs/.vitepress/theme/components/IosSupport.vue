@@ -49,8 +49,8 @@ const danmaku = computed(() => supporters.value.map((supporter, index, list) => 
   const mobile = layout(2)
   return {
     ...supporter,
-    laneDesktop: desktop.lane,
-    laneMobile: mobile.lane,
+    topDesktop: (13 + desktop.lane * 43) + 'px',
+    topMobile: (12 + mobile.lane * 42) + 'px',
     durationDesktop: desktop.duration + 's',
     durationMobile: mobile.duration + 's',
     delayDesktop: desktop.delay + 's',
@@ -140,8 +140,8 @@ onMounted(loadSnapshot)
           <div v-for="(supporter, index) in danmaku" :key="index"
             class="ios-danmaku-chip"
             :style="{
-              '--lane-desktop': supporter.laneDesktop,
-              '--lane-mobile': supporter.laneMobile,
+              '--top-desktop': supporter.topDesktop,
+              '--top-mobile': supporter.topMobile,
               '--duration-desktop': supporter.durationDesktop,
               '--duration-mobile': supporter.durationMobile,
               '--delay-desktop': supporter.delayDesktop,
@@ -185,7 +185,7 @@ onMounted(loadSnapshot)
 .ios-danmaku-panel::before,.ios-danmaku-panel::after { content:''; position:absolute; top:0; bottom:0; width:24px; z-index:1; pointer-events:none; }
 .ios-danmaku-panel::before { left:0; background:linear-gradient(to right,var(--xs-soft),transparent); }
 .ios-danmaku-panel::after { right:0; background:linear-gradient(to left,var(--xs-soft),transparent); }
-.ios-danmaku-chip { position:absolute; top:calc(13px + var(--lane-desktop) * 43px); left:100%; display:inline-flex; align-items:center; gap:11px; height:32px; max-width:none; padding:0 13px; border:1px solid var(--xs-rule); border-radius:999px; color:var(--xs-ink); background:var(--xs-frost-strong); box-shadow:0 2px 8px rgba(15,18,28,.055),inset 0 1px var(--xs-glow); white-space:nowrap; font-size:11px; will-change:left,transform; animation:ios-danmaku-fly var(--duration-desktop) linear infinite; animation-delay:var(--delay-desktop); }
+.ios-danmaku-chip { position:absolute; top:var(--top-desktop); left:100%; display:inline-flex; align-items:center; gap:11px; height:32px; max-width:none; padding:0 13px; border:1px solid var(--xs-rule); border-radius:999px; color:var(--xs-ink); background:var(--xs-frost-strong); box-shadow:0 2px 8px rgba(15,18,28,.055),inset 0 1px var(--xs-glow); white-space:nowrap; font-size:11px; will-change:left,transform; animation:ios-danmaku-fly var(--duration-desktop) linear infinite; animation-delay:var(--delay-desktop); }
 .ios-danmaku-name { font-weight:700; }
 .ios-danmaku-amount { color:var(--xs-muted); font-size:10px; font-variant-numeric:tabular-nums; }
 @keyframes ios-danmaku-fly { from { left:100%; transform:translateX(0); } to { left:0; transform:translateX(-100%); } }
@@ -199,7 +199,7 @@ onMounted(loadSnapshot)
   .ios-funding { margin-top:17px; }
   .ios-carousel { margin-top:17px; }
   .ios-danmaku-panel { height:105px; }
-  .ios-danmaku-chip { top:calc(12px + var(--lane-mobile) * 42px); animation-duration:var(--duration-mobile); animation-delay:var(--delay-mobile); }
+  .ios-danmaku-chip { top:var(--top-mobile); animation-duration:var(--duration-mobile); animation-delay:var(--delay-mobile); }
 }
 @media (max-width:380px) { .ios-sync-line { font-size:9px; gap:4px; } }
 @media (prefers-reduced-motion:reduce) {
