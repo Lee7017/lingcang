@@ -95,6 +95,57 @@ for (const c of [
       failures.push(c.label + ': iOS support link is incorrect')
     findings.push({ test: 'ios-support-in-grid-' + c.label, ...iosCard })
   }
+  // 仅在 Playwright 内模拟“已授权公示”的测试数据，绝不写入官网或公开 JSON。
+  // 同时检查桌面三行、手机两行的右往左弹幕，并保留检查截图供人工复核。
+  if (c.label === 'downloads-desktop' || c.label === 'downloads-mobile') {
+    const mock = {
+      status: 'live', target: 750, raised: 99, supporterCount: 9,
+      syncedAt: '2026-11-18T00:00:00.000Z', supportUrl: null,
+      supporters: Array.from({ length: 9 }, (_, i) => ({
+        name: '界面测试支持者' + (i + 1), amount: (i + 1) * 2.5
+      }))
+    }
+    const preview = await browser.newContext({
+      viewport: { width: c.width, height: c.height },
+      deviceScaleFactor: 1,
+      isMobile: c.mobile,
+      hasTouch: c.mobile,
+      colorScheme: c.mobile ? 'light' : 'dark'
+    })
+    const demoPage = await preview.newPage()
+    await demoPage.route('**/Lee7017/lingcang-ota/main/support/ios.json*',
+      route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mock) }))
+    await demoPage.goto(new URL('download/', origin).href, { waitUntil: 'networkidle', timeout: 45000 })
+    await demoPage.locator('.ios-danmaku-chip').first().waitFor({ timeout: 8000 })
+    const geometry = await demoPage.evaluate(() => {
+      const panel = document.querySelector('.ios-danmaku-panel')
+      const items = [...document.querySelectorAll('.ios-danmaku-chip')]
+      return {
+        count: items.length,
+        panelHeight: Math.round(panel.getBoundingClientRect().height),
+        lanes: [...new Set(items.map(el => Math.round(el.getBoundingClientRect().top)))].sort(),
+        animations: items.map(el => getComputedStyle(el).animationName),
+        titleRemoved: !document.querySelector('.ios-carousel h3'),
+        supportLinkInHeader: !!document.querySelector('.ios-card-heading .ios-support-link'),
+        horizontalOverflow: Math.max(0, document.documentElement.scrollWidth - innerWidth)
+      }
+    })
+    const firstChip = demoPage.locator('.ios-danmaku-chip').first()
+    const startX = (await firstChip.boundingBox())?.x
+    await demoPage.waitForTimeout(350)
+    const endX = (await firstChip.boundingBox())?.x
+    if (geometry.count !== 9 || geometry.lanes.length !== (c.mobile ? 2 : 3) ||
+      !geometry.titleRemoved || !geometry.supportLinkInHeader ||
+      geometry.horizontalOverflow > 2 || geometry.animations.some(name => !name.includes('ios-danmaku-fly')) ||
+      !(typeof startX === 'number' && typeof endX === 'number' && endX < startX))
+      failures.push(c.label + ': horizontal supporter danmaku failed layout or movement')
+    await demoPage.locator('.ios-support-card').screenshot({
+      path: path.join(output, 'ios-danmaku-' + (c.mobile ? 'mobile' : 'desktop') + '.png'),
+      animations: 'allow'
+    })
+    findings.push({ test: 'horizontal-supporter-danmaku-' + c.label, ...geometry, startX, endX })
+    await preview.close()
+  }
   if (c.label === 'downloads-desktop') {
     const expectedRepository = process.env.GITHUB_REPOSITORY || 'Lee7017/lingcang'
     if (await page.getByText('下载链路测试 · PNG 图片').count()) failures.push('removed test-download block is still visible')
