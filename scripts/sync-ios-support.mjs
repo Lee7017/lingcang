@@ -50,12 +50,30 @@ async function queryPage(page) {
   return json.data
 }
 
+async function loadPublishedSnapshot(fallback) {
+  // Actions 每次都重新检出仓库。必须和网站已发布的统计比较，而不是只看仓库内的初始 JSON。
+  const publishedUrl = process.env.AFDIAN_PUBLIC_STATS_URL?.trim() || 'https://lee7017.github.io/lingcang/support/ios.json'
+  try {
+    const url = new URL(publishedUrl)
+    if (url.protocol !== 'https:') throw new Error('Only HTTPS is supported')
+    url.searchParams.set('refresh', String(Date.now()))
+    const response = await fetch(url.href, { cache: 'no-store', signal: AbortSignal.timeout(10000) })
+    if (!response.ok) return fallback
+    const value = await response.json()
+    if (value && ['live','unconfigured'].includes(value.status) && typeof value.target === 'number') return value
+  } catch {
+    // Pages 尚未部署或暂时不可用：保留回退方式，不输出订单或凭据。
+  }
+  return fallback
+}
+
 async function main() {
   if (!userId || !token || !planId) {
     console.log('未配置 AFDIAN_USER_ID / AFDIAN_API_TOKEN / AFDIAN_PLAN_ID，保持未接入状态。')
     return
   }
-  const previous = JSON.parse(await readFile(file, 'utf8'))
+  const baseline = JSON.parse(await readFile(file, 'utf8'))
+  const previous = await loadPublishedSnapshot(baseline)
   const url = validSupportUrl(publicUrl)
   const seen = new Set()
   const supporterIds = new Set()
@@ -86,16 +104,18 @@ async function main() {
 
   const next = {
     status:'live',
-    target: previous.target,
+    target: baseline.target,
     raised: sum / 100,
     supporterCount: supporterIds.size,
     syncedAt: new Date().toISOString(),
     supportUrl: url,
     // 仅由明确授权的独立机制提供名单；不会从原始订单自动公开姓名与个人金额。
-    supporters: Array.isArray(previous.supporters) ? previous.supporters : []
+    supporters: Array.isArray(baseline.supporters) ? baseline.supporters : []
   }
   const oldAge = previous.syncedAt ? Date.now() - Date.parse(previous.syncedAt) : Infinity
-  const needsPublish = previous.status !== next.status || previous.raised !== next.raised ||
+  const needsPublish = previous.status !== next.status || previous.target !== next.target ||
+    JSON.stringify(previous.supporters) !== JSON.stringify(next.supporters) ||
+    previous.raised !== next.raised ||
     previous.supporterCount !== next.supporterCount || previous.supportUrl !== next.supportUrl ||
     !Number.isFinite(oldAge) || oldAge >= 60 * 60 * 1000
   if (!needsPublish) { console.log('同步成功，统计未变，暂不重复部署。'); return }
