@@ -79,7 +79,7 @@ for (const c of [
       refreshButtonCount: document.querySelectorAll('.download-grid > .ios-support-card .ios-refresh').length,
       removedCopyPresent: /已确认支持|手动刷新仅获取已发布的数据|自愿公开/.test(
         document.querySelector('.download-grid > .ios-support-card')?.textContent || ''),
-      schedule: document.querySelector('.download-grid > .ios-support-card .ios-frequency')?.textContent?.trim()
+      schedule: document.querySelector('.download-grid > .ios-support-card .ios-sync-line')?.textContent?.trim()
     }))
     if (iosCard.cardCount !== 4 || !iosCard.inlineSupport || iosCard.supportCount !== 1)
       failures.push(c.label + ': iOS support must replace the fourth download card without an extra block')
