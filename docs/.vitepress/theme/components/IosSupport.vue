@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { withBase } from 'vitepress'
 import {
   ArrowUpRight, CalendarDays, CheckCircle2, HeartHandshake,
   RefreshCw, ShieldCheck, Users, Wallet
@@ -84,7 +83,7 @@ async function refresh() {
   loading.value = true
   error.value = ''
   try {
-    const res = await fetch(withBase('/support/ios.json') + '?v=' + Date.now(), { cache: 'no-store' })
+    const res = await fetch('https://raw.githubusercontent.com/Lee7017/lingcang-ota/main/support/ios.json?v=' + Date.now(), { cache: 'no-store' })
     if (!res.ok) throw new Error('HTTP ' + res.status)
     snapshot.value = parseSnapshot(await res.json())
   } catch {
