@@ -213,7 +213,7 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
 .ios-supporter-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ios-supporter strong { font-variant-numeric:tabular-nums; white-space:nowrap; }
 .ios-support-card .ios-support-empty { display:flex; align-items:center; min-height:45px; padding:10px 12px; margin:0; color:var(--xs-muted); background:var(--xs-soft); border:1px dashed var(--xs-rule); border-radius:10px; font-size:11px; line-height:1.5; }
-.ios-support-link { width:100%; min-height:43px; margin-top:auto; display:flex; align-items:center; justify-content:center; gap:8px; }
+.ios-support-link { width:100%; min-height:46px; margin-top:auto; display:flex; align-items:center; justify-content:center; gap:8px; }
 .ios-slide-enter-active,.ios-slide-leave-active { transition:opacity .2s ease,transform .2s ease; }
 .ios-slide-enter-from { opacity:0; transform:translateX(14px); }
 .ios-slide-leave-to { opacity:0; transform:translateX(-14px); }

@@ -66,6 +66,25 @@ for (const c of [
     await capture(page, 'home-hover-desktop.png')
     findings.push({ component: 'primary-hover', before, after })
   }
+  if (c.label === 'downloads-desktop' || c.label === 'downloads-mobile') {
+    const iosCard = await page.evaluate(() => ({
+      cardCount: document.querySelectorAll('.download-grid > .download-card').length,
+      inlineSupport: !!document.querySelector('.download-grid > .ios-support-card'),
+      supportCount: document.querySelectorAll('#ios-support').length,
+      supportTitle: document.querySelector('.download-grid > .ios-support-card h2')?.textContent?.trim(),
+      supportLink: document.querySelector('.download-grid > .ios-support-card a.ios-support-link')?.getAttribute('href'),
+      supporterArea: !!document.querySelector('.download-grid > .ios-support-card .ios-carousel'),
+      schedule: document.querySelector('.download-grid > .ios-support-card .ios-frequency')?.textContent?.trim()
+    }))
+    if (iosCard.cardCount !== 4 || !iosCard.inlineSupport || iosCard.supportCount !== 1)
+      failures.push(c.label + ': iOS support must replace the fourth download card without an extra block')
+    if (iosCard.supportTitle !== 'iOS 开发者支持计划' || !iosCard.supporterArea ||
+        !iosCard.schedule?.includes('30 分钟'))
+      failures.push(c.label + ': iOS support card is missing its required content')
+    if (iosCard.supportLink !== 'https://afdian.com/item/d9aa8642e2b411f181af52540025c377')
+      failures.push(c.label + ': iOS support link is incorrect')
+    findings.push({ test: 'ios-support-in-grid-' + c.label, ...iosCard })
+  }
   if (c.label === 'downloads-desktop') {
     const expectedRepository = process.env.GITHUB_REPOSITORY || 'Lee7017/lingcang'
     if (await page.getByText('下载链路测试 · PNG 图片').count()) failures.push('removed test-download block is still visible')
