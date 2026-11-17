@@ -3,6 +3,7 @@ import { withBase } from 'vitepress'
 import { Download, Monitor, Smartphone, Laptop, Tablet, Github, ShieldCheck, ArrowRight } from 'lucide-vue-next'
 import { releasePlatforms, releasesPageUrl } from '../data/releases'
 const iconMap = { monitor: Monitor, smartphone: Smartphone, laptop: Laptop, tablet: Tablet }
+const downloadPlatforms = releasePlatforms.filter(item => item.name !== 'iOS / iPadOS')
 </script>
 
 <template>
@@ -20,17 +21,16 @@ const iconMap = { monitor: Monitor, smartphone: Smartphone, laptop: Laptop, tabl
       <a class="xs-button secondary" :href="withBase('/invite/')">申请邀请码 <ArrowRight :size="17" /></a>
     </section>
     <div class="download-grid">
-      <article v-for="item in releasePlatforms" :key="item.name" class="download-card">
+      <article v-for="item in downloadPlatforms" :key="item.name" class="download-card">
         <div class="platform-icon"><component :is="iconMap[item.icon]" :size="30" stroke-width="1.55"/></div>
         <div class="download-card-heading"><h2>{{ item.name }}</h2><span :class="item.status === '已发布' ? 'tag live' : 'tag'">{{ item.status }}</span></div>
         <p>{{ item.description }}</p>
         <div class="download-meta">{{ item.format }}<template v-if="item.version"> · {{ item.version }}</template></div>
         <a v-if="item.status === '已发布' && item.url" class="xs-button primary download-action" :href="item.url" target="_blank" rel="noopener noreferrer"><Download :size="16"/>下载 {{ item.name }}</a>
         <span v-else class="xs-button disabled download-action" aria-disabled="true">尚未开放下载</span>
-        <a v-if="item.name === 'iOS / iPadOS'" class="text-link" href="#ios-support">查看 iOS 开发支持计划 <ArrowRight :size="16" /></a>
       </article>
+      <IosSupport />
     </div>
-    <IosSupport />
     <div class="download-note">
       <Github :size="23"/>
       <div><strong>统一使用 GitHub Releases 发布安装包</strong><p>123 云盘只规划用于软件内部云端同步，不是下载渠道。发布新版本后，在 <code>releases.ts</code> 填入真实资源地址并修改状态。</p>
