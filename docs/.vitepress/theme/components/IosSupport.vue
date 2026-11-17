@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { ArrowUpRight, ChevronLeft, ChevronRight, HeartHandshake } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import { ArrowUpRight, HeartHandshake } from 'lucide-vue-next'
 
 interface PublicSupporter {
   name: string
@@ -36,32 +36,27 @@ const syncedText = computed(() => {
   }).format(date)
 })
 
-const supporterIndex = ref(0)
-const carouselPaused = ref(false)
-const activeSupporter = computed(() => supporters.value[supporterIndex.value] ?? null)
-let carouselTimer: ReturnType<typeof setInterval> | undefined
-
-function stepSupporter(step: number) {
-  const length = supporters.value.length
-  if (length < 2) return
-  supporterIndex.value = (supporterIndex.value + step + length) % length
-}
-
-function resetCarousel() {
-  if (carouselTimer) clearInterval(carouselTimer)
-  carouselTimer = undefined
-  supporterIndex.value = 0
-  if (supporters.value.length < 2 || (typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return
-  carouselTimer = setInterval(() => {
-    if (!carouselPaused.value) stepSupporter(1)
-  }, 5000)
-}
-
-function onCarouselFocusOut(event: FocusEvent) {
-  const area = event.currentTarget as HTMLElement
-  if (!area.contains(event.relatedTarget as Node | null)) carouselPaused.value = false
-}
+// 一条支持记录对应一枚弹幕，桌面三行、手机两行，不生成假支持者。
+const danmaku = computed(() => supporters.value.map((supporter, index, list) => {
+  function layout(rows: number) {
+    const lane = index % rows
+    const order = Math.floor(index / rows)
+    const size = Math.floor((list.length - 1 - lane) / rows) + 1
+    const duration = Math.max(20, size * 9)
+    return { lane, duration, delay: -(1.5 + lane * 4.7 + order * duration / size) }
+  }
+  const desktop = layout(3)
+  const mobile = layout(2)
+  return {
+    ...supporter,
+    laneDesktop: desktop.lane,
+    laneMobile: mobile.lane,
+    durationDesktop: desktop.duration + 's',
+    durationMobile: mobile.duration + 's',
+    delayDesktop: desktop.delay + 's',
+    delayMobile: mobile.delay + 's'
+  }
+}))
 
 function parseSnapshot(value: unknown): IosSupportSnapshot {
   if (!value || typeof value !== 'object') throw new Error('数据格式不正确')
@@ -100,9 +95,7 @@ async function loadSnapshot() {
   }
 }
 
-watch(supporters, resetCarousel)
 onMounted(loadSnapshot)
-onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
 </script>
 
 <template>
@@ -116,7 +109,8 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
         </div>
       </div>
       <a :href="SUPPORT_URL" class="xs-button primary ios-support-link" target="_blank" rel="noopener noreferrer">
-        前往支持 <ArrowUpRight :size="15" />
+        <span>前往支持</span>
+        <span class="ios-support-link-arrow"><ArrowUpRight :size="16" stroke-width="2.3" /></span>
       </a>
     </div>
 
@@ -140,25 +134,24 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
       <p v-if="error" class="ios-error" role="status">{{ error }}</p>
     </div>
 
-    <div class="ios-carousel" role="region" aria-roledescription="轮播" aria-label="支持者公示"
-      @mouseenter="carouselPaused = true" @mouseleave="carouselPaused = false"
-      @focusin="carouselPaused = true" @focusout="onCarouselFocusOut">
-      <div class="ios-carousel-heading">
-        <h3>支持者公示</h3>
-        <div v-if="supporters.length > 1" class="ios-carousel-controls">
-          <span>{{ supporterIndex + 1 }} / {{ supporters.length }}</span>
-          <button type="button" aria-label="上一位支持者" @click="stepSupporter(-1)"><ChevronLeft :size="16" /></button>
-          <button type="button" aria-label="下一位支持者" @click="stepSupporter(1)"><ChevronRight :size="16" /></button>
-        </div>
-      </div>
-      <div class="ios-carousel-viewport">
-        <Transition name="ios-slide" mode="out-in">
-          <div v-if="activeSupporter" :key="supporterIndex" class="ios-supporter">
-            <span class="ios-supporter-name">{{ activeSupporter.name }}</span>
-            <strong>{{ money.format(activeSupporter.amount) }}</strong>
+    <div class="ios-carousel" role="region" aria-label="公开支持者弹幕">
+      <div class="ios-danmaku-panel">
+        <template v-if="danmaku.length">
+          <div v-for="(supporter, index) in danmaku" :key="index"
+            class="ios-danmaku-chip"
+            :style="{
+              '--lane-desktop': supporter.laneDesktop,
+              '--lane-mobile': supporter.laneMobile,
+              '--duration-desktop': supporter.durationDesktop,
+              '--duration-mobile': supporter.durationMobile,
+              '--delay-desktop': supporter.delayDesktop,
+              '--delay-mobile': supporter.delayMobile
+            }">
+            <span class="ios-danmaku-name">{{ supporter.name }}</span>
+            <span class="ios-danmaku-amount">{{ money.format(supporter.amount) }}</span>
           </div>
-          <p v-else key="empty" class="ios-support-empty">暂无已授权公开的支持者</p>
-        </Transition>
+        </template>
+        <div v-else class="ios-danmaku-empty">暂无已授权公开的支持者</div>
       </div>
     </div>
   </article>
@@ -166,11 +159,16 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
 
 <style scoped>
 .ios-support-card { min-width:0; scroll-margin-top:105px; gap:0; }
-.ios-card-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap; min-width:0; }
-.ios-card-intro { display:flex; align-items:center; gap:10px; flex:1 1 175px; min-width:0; }
-.ios-card-icon { width:48px; height:48px; flex:none; margin:0; border-radius:14px; }
+.ios-card-heading { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; min-width:0; }
+.ios-card-intro { display:flex; align-items:center; gap:10px; min-width:0; }
+.ios-card-icon { width:45px; height:45px; flex:none; margin:0; border-radius:13px; }
 .ios-card-title { min-width:0; }
-.ios-support-link { min-height:46px; flex:none; margin-left:auto; padding:0 11px; font-size:11px; }
+.ios-support-link { min-height:46px; height:46px; min-width:0; flex:none; padding:0 8px 0 14px; gap:8px; font-size:12px; font-weight:760; letter-spacing:.01em; box-shadow:inset 0 1px rgba(255,255,255,.22),0 8px 19px rgba(15,18,25,.13); }
+.ios-support-link-arrow { display:grid; place-items:center; width:28px; height:28px; border-radius:9px; background:rgba(255,255,255,.17); box-shadow:inset 0 1px rgba(255,255,255,.16); transition:transform .18s ease,background-color .18s ease; }
+.ios-support-link:hover .ios-support-link-arrow { transform:translate(1px,-1px); background:rgba(255,255,255,.25); }
+:global(.dark) .ios-support-link-arrow { background:rgba(18,21,27,.10); box-shadow:inset 0 1px rgba(18,21,27,.06); }
+:global(.dark) .ios-support-link:hover .ios-support-link-arrow { background:rgba(18,21,27,.18); }
+.ios-support-link:focus-visible { outline:2px solid var(--xs-ink); outline-offset:3px; }
 .ios-card-title>span { display:block; color:var(--xs-muted); font-size:11px; margin-bottom:4px; }
 .ios-card-title h2 { font-size:19px; line-height:1.25; letter-spacing:-.035em; overflow-wrap:anywhere; }
 .ios-funding { margin-top:21px; }
@@ -182,28 +180,31 @@ onUnmounted(() => { if (carouselTimer) clearInterval(carouselTimer) })
 .ios-sync { margin-top:17px; }
 .ios-sync-line { display:flex; align-items:center; justify-content:space-between; gap:8px; white-space:nowrap; color:var(--xs-muted); font-size:11px; line-height:1.65; }
 .ios-error { margin:7px 0 0!important; color:var(--xs-muted); font-size:11px!important; }
-.ios-carousel { margin-top:19px; padding-top:15px; border-top:1px solid var(--xs-rule); min-width:0; }
-.ios-carousel-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.ios-carousel-heading h3 { font-size:13px; font-weight:740; }
-.ios-carousel-controls>span { font-size:10px; color:var(--xs-muted); }
-.ios-carousel-controls { display:flex; align-items:center; gap:6px; }
-.ios-carousel-controls button { display:grid; place-items:center; width:25px; height:25px; border:1px solid var(--xs-rule); border-radius:7px; background:var(--xs-soft); color:var(--xs-ink); cursor:pointer; }
-.ios-carousel-viewport { position:relative; min-height:49px; margin-top:9px; overflow:hidden; }
-.ios-supporter { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:45px; padding:10px 12px; background:var(--xs-soft); border:1px solid var(--xs-rule); border-radius:10px; font-size:12px; }
-.ios-supporter-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.ios-supporter strong { font-variant-numeric:tabular-nums; white-space:nowrap; }
-.ios-support-card .ios-support-empty { display:flex; align-items:center; min-height:45px; padding:10px 12px; margin:0; color:var(--xs-muted); background:var(--xs-soft); border:1px dashed var(--xs-rule); border-radius:10px; font-size:11px; line-height:1.5; }
-.ios-slide-enter-active,.ios-slide-leave-active { transition:opacity .2s ease,transform .2s ease; }
-.ios-slide-enter-from { opacity:0; transform:translateX(14px); }
-.ios-slide-leave-to { opacity:0; transform:translateX(-14px); }
+.ios-carousel { margin-top:20px; min-width:0; }
+.ios-danmaku-panel { position:relative; overflow:hidden; height:145px; min-width:0; isolation:isolate; border:1px solid var(--xs-rule); border-radius:14px; background:var(--xs-soft); }
+.ios-danmaku-panel::before,.ios-danmaku-panel::after { content:''; position:absolute; top:0; bottom:0; width:24px; z-index:1; pointer-events:none; }
+.ios-danmaku-panel::before { left:0; background:linear-gradient(to right,var(--xs-soft),transparent); }
+.ios-danmaku-panel::after { right:0; background:linear-gradient(to left,var(--xs-soft),transparent); }
+.ios-danmaku-chip { position:absolute; top:calc(13px + var(--lane-desktop) * 43px); left:100%; display:inline-flex; align-items:center; gap:11px; height:32px; max-width:none; padding:0 13px; border:1px solid var(--xs-rule); border-radius:999px; color:var(--xs-ink); background:var(--xs-frost-strong); box-shadow:0 2px 8px rgba(15,18,28,.055),inset 0 1px var(--xs-glow); white-space:nowrap; font-size:11px; will-change:left,transform; animation:ios-danmaku-fly var(--duration-desktop) linear infinite; animation-delay:var(--delay-desktop); }
+.ios-danmaku-name { font-weight:700; }
+.ios-danmaku-amount { color:var(--xs-muted); font-size:10px; font-variant-numeric:tabular-nums; }
+@keyframes ios-danmaku-fly { from { left:100%; transform:translateX(0); } to { left:0; transform:translateX(-100%); } }
+.ios-danmaku-panel:hover .ios-danmaku-chip,.ios-danmaku-panel:focus-within .ios-danmaku-chip { animation-play-state:paused; }
+.ios-danmaku-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--xs-muted); font-size:11px; }
 @media (max-width:680px) {
   .ios-sync-line { font-size:10px; }
-  .ios-card-title h2 { font-size:18px; }
+  .ios-card-title h2 { font-size:17px; }
+  .ios-support-link { padding-left:10px; font-size:11px; gap:5px; }
+  .ios-support-link-arrow { width:25px; height:25px; border-radius:8px; }
   .ios-funding { margin-top:17px; }
-  .ios-carousel { margin-top:15px; }
+  .ios-carousel { margin-top:17px; }
+  .ios-danmaku-panel { height:105px; }
+  .ios-danmaku-chip { top:calc(12px + var(--lane-mobile) * 42px); animation-duration:var(--duration-mobile); animation-delay:var(--delay-mobile); }
 }
 @media (max-width:380px) { .ios-sync-line { font-size:9px; gap:4px; } }
 @media (prefers-reduced-motion:reduce) {
-  .ios-progress-fill,.ios-slide-enter-active,.ios-slide-leave-active { transition:none; }
+  .ios-progress-fill,.ios-support-link-arrow { transition:none; }
+  .ios-danmaku-panel { display:flex; align-items:flex-start; flex-wrap:wrap; gap:8px; padding:11px; overflow:auto; }
+  .ios-danmaku-chip { position:static; animation:none; transform:none; flex:none; }
 }
 </style>
