@@ -3,8 +3,8 @@ import { chromium } from 'playwright'
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 
-const origin = process.env.PREVIEW_URL || 'http://127.0.0.1:4173/lingcang/'
-const output = 'lingcang-visual-review/layout'
+const origin = process.env.PREVIEW_URL || 'http://127.0.0.1:4173/pleasejot/'
+const output = 'pleasejot-visual-review/layout'
 mkdirSync(output, { recursive: true })
 
 const routes = [
