@@ -25,7 +25,19 @@ try {
     })
     const page = await context.newPage()
     const errors = []
+    const embeddedResponses = []
+    const embedErrors = []
     page.on('pageerror', error => errors.push(error.message))
+    page.on('response', response => {
+      if (response.url().startsWith('https://wj.qq.com/')) {
+        embeddedResponses.push({ url: response.url(), status: response.status() })
+      }
+    })
+    page.on('requestfailed', request => {
+      if (request.url().startsWith('https://wj.qq.com/')) {
+        embedErrors.push({ url: request.url(), reason: request.failure()?.errorText })
+      }
+    })
     const response = await page.goto(new URL('feedback/', origin).href, {
       waitUntil: 'domcontentloaded',
       timeout: 45000
@@ -48,7 +60,13 @@ try {
     if (state.overflow > 2) failures.push(variant.label + ': horizontal overflow ' + state.overflow)
     if (errors.length) failures.push(variant.label + ': runtime errors ' + errors.join(' | '))
     await page.screenshot({ path: path.join(output, 'feedback-' + variant.label + '.png'), fullPage: true, animations: 'disabled' })
-    console.log(JSON.stringify({ test: 'feedback-' + variant.label, ...state, errors }))
+    // External-site embed details are reported separately from local layout checks.
+    // On CI, network failure may be unrelated to iframe policy.
+    const frame = page.frames().find(f => f.url().startsWith('https://wj.qq.com/'))
+    const frameData = frame
+      ? await frame.locator('body').innerText({ timeout: 5000 }).then(text => text.slice(0, 500)).catch(() => null)
+      : null
+    console.log(JSON.stringify({ test: 'feedback-' + variant.label, ...state, errors, embeddedResponses, embedErrors, frameUrl: frame?.url() ?? null, frameBody: frameData }))
     await context.close()
   }
 } finally {
