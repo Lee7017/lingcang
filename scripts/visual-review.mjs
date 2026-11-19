@@ -2,8 +2,8 @@ import { chromium } from 'playwright'
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 
-const origin = process.env.PREVIEW_URL || 'http://127.0.0.1:4173/lingcang/'
-const output = 'lingcang-visual-review'
+const origin = process.env.PREVIEW_URL || 'http://127.0.0.1:4173/pleasejot/'
+const output = 'pleasejot-visual-review'
 mkdirSync(output, { recursive: true })
 const browser = await chromium.launch({ headless: true })
 const failures = []
@@ -115,7 +115,7 @@ for (const c of [
       colorScheme: c.mobile ? 'light' : 'dark'
     })
     const demoPage = await preview.newPage()
-    await demoPage.route('**/Lee7017/*-ota/main/support/ios.json*',
+    await demoPage.route('**/Lee7017/pleasejot-ota/main/support/ios.json*',
       route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mock) }))
     await demoPage.goto(new URL('download/', origin).href, { waitUntil: 'networkidle', timeout: 45000 })
     const layoutSelector = c.mobile ? '.ios-danmaku-layout--mobile' : '.ios-danmaku-layout--desktop'
