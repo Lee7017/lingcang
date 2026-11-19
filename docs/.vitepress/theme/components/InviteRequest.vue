@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { Send, Copy, Check } from 'lucide-vue-next'
 
 const recipientPhone = '13231226535'
-const applicationTitle = '灵仓内测邀请码申请'
+const applicationTitle = 'PleaseJot 内测邀请码申请'
 const applicantPhone = ref('')
 const nickname = ref('')
 const explanation = ref('')
@@ -69,7 +69,7 @@ function onSmsClick(event: MouseEvent) {
 <template>
   <main class="page-design invite-page section-width">
     <div class="page-intro">
-      <h1>申请灵仓内测邀请码</h1>
+      <h1>申请 PleaseJot 内测邀请码</h1>
     </div>
 
     <section class="invite-panel" aria-label="短信邀请码申请">
