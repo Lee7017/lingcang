@@ -101,7 +101,8 @@ CSS 变量定义在 `docs/.vitepress/theme/custom.css` 的 `:root` / `.dark` 内
 ## PleaseJot 品牌名称
 
 - 网站、下载、文档、申请入口、版权与 SEO 中的产品名称统一为 **PleaseJot**。
-- GitHub 主仓库、OTA 仓库由管理员分别更名为 `Lee7017/pleasejot` 和 `Lee7017/pleasejot-ota`；更名后 GitHub Pages 路径为 `/pleasejot/`，须确认重新部署成功。原始 `/lingcang/` 项目站点链接不会因为仓库更名自动转为新地址。
-- Releases 下载地址随实际仓库名生成；官网的 iOS 支持统计优先读取新的 `pleasejot-ota`，暂保留旧仓库地址作迁移回退。原生客户端若有写死的更新路径需在对应应用仓库另外核对。
+- 官网主仓库为 `Lee7017/pleasejot`，OTA 仓库为 `Lee7017/pleasejot-ota`；GitHub Pages 使用 `/pleasejot/` 路径。
+- Releases 下载地址随当前仓库名生成；官网的 iOS 支持统计只读取 `pleasejot-ota/main/support/ios.json`，不保留旧仓库回退。
+- 原生客户端如果写死了更新服务地址，须在对应应用仓库核对后使用新的 OTA 地址。
 - 现有图形标识暂保留，SVG 无障碍名称已更新；PNG 图标若未来换标识，再统一替换。
 - 浏览器审核检查当前产品名称，防止回归到旧品牌。
