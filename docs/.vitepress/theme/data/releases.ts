@@ -23,6 +23,6 @@ export const releasePlatforms: ReleasePlatform[] = [
 // 从构建环境读取当前仓库地址，仓库改名后无需更改网站源码。
 // 本地未配置 VITE_GITHUB_REPOSITORY 时，从站点 base 推导仓库名称。
 const repository = import.meta.env.VITE_GITHUB_REPOSITORY
-  || `Lee7017/${import.meta.env.BASE_URL.split('/').filter(Boolean)[0] || 'lingcang'}`
+  || `Lee7017/${import.meta.env.BASE_URL.split('/').filter(Boolean)[0] || 'pleasejot'}`
 export const releasesPageUrl = `https://github.com/${repository}/releases`
 
