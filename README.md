@@ -106,13 +106,14 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 ## PleaseJot 品牌与官网地址
 
 - 产品名称统一使用 **PleaseJot**，包括网站标题、SEO 描述、首页、下载、文档、内测申请和页脚。
-- **仓库名由管理员在 GitHub 设置中修改：** 主仓库从 `Lee7017/lingcang` 更名为 `Lee7017/pleasejot`；OTA 仓库从 `Lee7017/lingcang-ota` 更名为 `Lee7017/pleasejot-ota`。
-- **更名后的官网地址：** `https://lee7017.github.io/pleasejot/`。GitHub Pages 的项目网址不会自动沿用旧的 `/lingcang/` 地址；需要检查 Pages 部署成功并更新对外链接。
-- 发布工作流根据 `github.event.repository.name` 设置 Pages 路径，下载页面由 `VITE_GITHUB_REPOSITORY` 生成 Releases 链接；OTA 的公开 iOS 支持数据优先读取 `pleasejot-ota`，暂保留旧路径作迁移兼容。若设置了固定的 `SITE_BASE` 或客户端内写死更新地址，也需要检查并调整。
+- **官网主仓库：** `Lee7017/pleasejot`；**OTA 仓库：** `Lee7017/pleasejot-ota`。
+- **官网地址：** `https://lee7017.github.io/pleasejot/`。
+- 发布工作流根据 `github.event.repository.name` 设置 Pages 路径，下载页面由 `VITE_GITHUB_REPOSITORY` 生成 Releases 链接；iOS 支持数据仅从 `pleasejot-ota/main/support/ios.json` 读取，不再尝试其他仓库地址。
+- 如果在 GitHub Actions 设置中自定义了 `SITE_BASE`，请确保其值对应官网当前部署路径；原生客户端的 OTA 更新地址须在客户端项目中另行核对。
 - 原图形标识暂时沿用；SVG 的无障碍名称已更新。确认新的图标后，再同时替换 `docs/public/logo.svg` 和对应 PNG 图标。
 
 ## 构建与浏览器检查
 
 - GitHub Actions 在推送 `main` 后执行 VitePress 构建及 Pages 部署。
 - `.github/workflows/visual-review.yml` 使用 Playwright + Chromium 进行桌面/手机、浅色/深色、导航、按钮、邀请码复制等回归检查，并保存截图。
-- 下载页的 `lingcang-test-download.png` 只是测试图片，不是正式安装包。
+- 官网使用的测试下载图片仅供界面检查，不是正式安装包。
