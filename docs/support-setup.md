@@ -1,36 +1,31 @@
-# iOS 开发支持：手动更新公开统计
+# iOS 开发支持：OTA 定时同步统计
 
-## 新的数据位置与更新方式
+## 仓库分工
 
-- **官网仓库**：`Lee7017/pleasejot`，公开数据位于仓库根目录的 `support/ios.json`。
-- **OTA 仓库**：`Lee7017/pleasejot-ota`，不再承担赞助数据查询与发布任务。
-- 官网从 `https://raw.githubusercontent.com/Lee7017/pleasejot/main/support/ios.json` 读取统计，Raw 不可访问时回退到同仓库 GitHub Contents API。
-- 官网“刷新”按钮只重新下载**已经发布的 JSON**；访客无法从网页直接查询爱发电，网页不持有任何 API 密钥。
-- 只有管理员在官网仓库 Actions 中手动运行 `Manual iOS support sync` 才会查询真实订单并提交 JSON。
-- 官网 Pages 的部署工作流通过 `paths-ignore: support/ios.json` 排除这个文件：**只修改这一个 JSON 时，既不构建也不部署官网**。因为网页是从仓库直接读取 JSON，所以仍能看到更新后的数据。GitHub Raw 可能有短暂 CDN 缓存。
-- 本次迁移保留此前最后一次真实同步的时间；不会把搬迁文件的时间冒充为查询订单的时间。
+- **`Lee7017/pleasejot-ota`**：持有爱发电 API 的 GitHub Actions Secrets，定时查询爱发电并提交公开 `support/ios.json`。
+- **`Lee7017/pleasejot`**：官网静态页面，仅从 OTA 仓库读取已发布的公开 JSON，不查询爱发电、不持有 API 密钥，也不因 OTA 数据更新重新构建。
+- 官网数据源：`https://raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json`；GitHub Raw 不可访问时回退到同仓库的 GitHub Contents API。
 
-## 首次启用真正的手动查询
+## 自动同步规则
 
-爱发电的密钥之前存在 OTA 仓库的 Actions Secrets 中。**仓库间的 Secrets 不会自动转移**。必须由仓库管理员在 `Lee7017/pleasejot` 中重新设置，不能写进 JSON、前端代码或仓库文件：
+GitHub Actions 的 `schedule` 最短支持每 5 分钟运行一次。OTA 工作流配置为 `3-59/5 * * * *`（UTC 每小时的 03、08、…、58 分），每次任务实际执行时都会查询爱发电订单。
 
-1. 打开 [官网仓库的 Actions Secrets 设置](https://github.com/Lee7017/pleasejot/settings/secrets/actions)。
-2. 添加 `AFDIAN_USER_ID`：爱发电 API 的 user_id。
-3. 添加 `AFDIAN_API_TOKEN`：爱发电 API token。
-4. `AFDIAN_PLAN_ID` 可选：只有使用不同 iOS 赞助方案时才需要；默认沿用已验证的方案 ID `d9aa8642e2b411f181af52540025c377`。
-5. `AFDIAN_SUPPORT_URL` 可选：仓库 Actions Variables 中的公开 HTTPS 支持链接，默认使用当前爱发电支持页面。
+- 金额、人数、配置发生变化：真实查询成功后即可提交新 JSON。
+- 数据不变：距离上次成功发布未满 1 小时则不重复提交；达到 1 小时后更新真实 `syncedAt`。
+- GitHub 的 `schedule` 有可能延迟或漏跑，即使设置 5 分钟也不保证 5 分钟内执行。因此官网保留「**每隔数小时更新**」说明，并显示 JSON 里的真实最近同步时间。
+- 无需访客主动刷新或管理员每天运行，页面首次加载时自动读取公开数据。没有后台服务、没有面向访客的 GitHub Token。
+- 查询失败则保留最后成功公开的数据和时间，不伪造为最新数据。
 
-完成配置后，打开 [官网仓库 → Actions → Manual iOS support sync](https://github.com/Lee7017/pleasejot/actions/workflows/ios-support-manual.yml)，选择 **Run workflow**，确认使用 `main` 分支后点击运行。
+实际运行记录：[OTA Sync iOS support statistics](https://github.com/Lee7017/pleasejot-ota/actions/workflows/ios-support.yml)。如时间长期不动，应检查 `schedule` 事件是否实际触发，而不仅是工作流手动执行是否成功。
 
-工作流先校验凭据和只读订单接口，再查询全部页面、按方案筛选成功订单、去重、计算金额与人数，最后**只提交** `support/ios.json`。每次真实查询成功都会更新 `syncedAt`，即使金额没有变化；查询失败不会发布新数据。缺少 Secrets 会直接失败，不能假装已经同步成功。
+## 密钥与数据保护
 
-工作流完成后检查 [公开 JSON](https://raw.githubusercontent.com/Lee7017/pleasejot/main/support/ios.json) 的 `syncedAt`，再打开官网下载页点击“刷新”。**刷新按钮不会启动 GitHub Actions**，只是重新读取已经生成的数据。
+所有爱发电 API 凭据都在 OTA 仓库的 [Actions Secrets](https://github.com/Lee7017/pleasejot-ota/settings/secrets/actions)，绝不可放入官网脚本或公开 JSON。
 
-## 数据与安全边界
+- `AFDIAN_USER_ID`、`AFDIAN_API_TOKEN`：调用爱发电所需。
+- `AFDIAN_PLAN_ID`：可选，默认已采用的 iOS 开发支持方案 ID。
+- `AFDIAN_SUPPORT_URL`：可选公开地址（Actions Variables）。
 
-- `support/ios.json` 是公开数据，只允许公布 `status`、`target`、`raised`、`supporterCount`、`syncedAt`、`supportUrl` 和经过本人明确授权的 `supporters` 名单。
-- 不能保存手机号、身份证信息、订单号、留言、爱发电私有 ID、原始 API 响应或任何密钥。
-- 支持者昵称及对应金额未经当事人明确授权不得公开；已有代码默认保留明确授权的名单，而不会直接把原始订单姓名写进 JSON。
-- 目前只统计指定方案、`status === 2` 的订单及其 `total_amount`，退款状态的全面处理仍需要真实订单验证。
-- 查询失败时保留上一次的有效数据及真实同步时间，不伪造“最新同步”。
-- OTA 仓库旧定时同步、watchdog 和外部 cron 方案均已停用/移除；后续不会因为时间经过而自动刷新公开统计。
+公开 JSON 仅存储 `status`、`target`、`raised`、`supporterCount`、`syncedAt`、`supportUrl`、经过明确授权公开的 `supporters`；不得存订单号、手机号、留言、私有用户 ID、API 密钥或原始订单数据。
+
+当前脚本仅按指定方案、付款状态为 2 的订单统计，退款规则仍需要根据真实订单进一步核验。
