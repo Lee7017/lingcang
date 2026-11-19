@@ -97,6 +97,55 @@ for (const c of [
       failures.push(c.label + ': iOS support link is incorrect')
     findings.push({ test: 'ios-support-in-grid-' + c.label, ...iosCard })
   }
+  // 回归场景：GitHub Raw 不可访问时，仍应通过同一 OTA 仓库的 Contents API
+  // 显示真实同步时间，而非误显示“尚未同步”。
+  if (c.label === 'downloads-desktop' || c.label === 'downloads-mobile') {
+    const fallbackContext = await browser.newContext({
+      viewport: { width: c.width, height: c.height },
+      isMobile: c.mobile, hasTouch: c.mobile
+    })
+    const fallbackPage = await fallbackContext.newPage()
+    const sample = {
+      status: 'live', target: 750, raised: 0, supporterCount: 0,
+      syncedAt: '2026-11-19T08:32:36.729Z', supportUrl: null, supporters: []
+    }
+    await fallbackPage.route('**/raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json*',
+      route => route.fulfill({ status: 503, body: 'Raw unavailable' }))
+    await fallbackPage.route('**/api.github.com/repos/Lee7017/pleasejot-ota/contents/support/ios.json*',
+      route => route.fulfill({
+        status: 200, contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
+        body: JSON.stringify({ encoding: 'base64', content: Buffer.from(JSON.stringify(sample)).toString('base64') })
+      }))
+    await fallbackPage.goto(new URL('download/', origin).href, { waitUntil: 'networkidle', timeout: 45000 })
+    const fallbackText = await fallbackPage.locator('.ios-sync-line').innerText()
+    const fallbackPercent = await fallbackPage.locator('.ios-funding-row strong').innerText()
+    const fallbackError = await fallbackPage.locator('.ios-error').count()
+    if (!fallbackText.includes('2026/11/19') || !fallbackText.includes('16:32') ||
+        fallbackPercent !== '0.0%' || fallbackError !== 0)
+      failures.push(c.label + ': GitHub API fallback failed: ' + JSON.stringify({
+        fallbackText, fallbackPercent, fallbackError
+      }))
+    findings.push({ test: 'ios-api-fallback-' + c.label, fallbackText, fallbackPercent, fallbackError })
+    await capture(fallbackPage, 'ios-api-fallback-' + (c.mobile ? 'mobile' : 'desktop') + '.png')
+    await fallbackContext.close()
+
+    if (!c.mobile) {
+      const failedContext = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+      const failedPage = await failedContext.newPage()
+      await failedPage.route('**/raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json*',
+        route => route.fulfill({ status: 503, body: 'Raw unavailable' }))
+      await failedPage.route('**/api.github.com/repos/Lee7017/pleasejot-ota/contents/support/ios.json*',
+        route => route.fulfill({ status: 503, body: 'API unavailable' }))
+      await failedPage.goto(new URL('download/', origin).href, { waitUntil: 'networkidle', timeout: 45000 })
+      const failureText = await failedPage.locator('.ios-sync').innerText()
+      if (!failureText.includes('读取失败') || failureText.includes('最近同步：尚未同步'))
+        failures.push('ios-support: unreadable data must show a real error: ' + failureText)
+      findings.push({ test: 'ios-both-sources-unavailable', failureText })
+      await capture(failedPage, 'ios-support-data-unavailable.png')
+      await failedContext.close()
+    }
+  }
   // 仅在 Playwright 内模拟已授权公示的测试数据；不写入公开 JSON。
   // 检查桌面三行、手机两行，且同一轨道的弹幕不会叠在一起。
   if (c.label === 'downloads-desktop' || c.label === 'downloads-mobile') {
