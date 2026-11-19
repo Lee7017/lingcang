@@ -90,14 +90,14 @@ for (const c of [
       failures.push(c.label + ': iOS support must replace the fourth download card without an extra block')
     if (iosCard.supportTitle !== 'iOS 开发者支持计划' || !iosCard.supporterArea ||
         !iosCard.progressArea || !iosCard.danmakuArea || !iosCard.danmakuHeadingRemoved ||
-        !iosCard.linkIcon || iosCard.supportActionHeight !== 32 || !iosCard.schedule?.includes('刷新') || iosCard.schedule?.includes('每隔数小时更新') ||
-        !iosCard.linkInHeader || iosCard.refreshButtonCount !== 1 || iosCard.removedCopyPresent)
+        !iosCard.linkIcon || iosCard.supportActionHeight !== 32 || !iosCard.schedule?.includes('每隔数小时更新') ||
+        !iosCard.linkInHeader || iosCard.refreshButtonCount !== 0 || iosCard.removedCopyPresent)
       failures.push(c.label + ': iOS support card is missing its required content')
     if (iosCard.supportLink !== 'https://afdian.com/item/d9aa8642e2b411f181af52540025c377')
       failures.push(c.label + ': iOS support link is incorrect')
     findings.push({ test: 'ios-support-in-grid-' + c.label, ...iosCard })
   }
-  // 回归场景：GitHub Raw 不可访问时，仍应通过同一官网仓库的 Contents API
+  // 回归场景：OTA GitHub Raw 不可访问时，仍可经 OTA 仓库 Contents API 读取
   // 显示真实同步时间，而非误显示“尚未同步”。
   if (c.label === 'downloads-desktop' || c.label === 'downloads-mobile') {
     const fallbackContext = await browser.newContext({
@@ -109,9 +109,9 @@ for (const c of [
       status: 'live', target: 750, raised: 0, supporterCount: 0,
       syncedAt: '2026-11-19T08:32:36.729Z', supportUrl: null, supporters: []
     }
-    await fallbackPage.route('**/raw.githubusercontent.com/Lee7017/pleasejot/main/support/ios.json*',
+    await fallbackPage.route('**/raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json*',
       route => route.fulfill({ status: 503, body: 'Raw unavailable' }))
-    await fallbackPage.route('**/api.github.com/repos/Lee7017/pleasejot/contents/support/ios.json*',
+    await fallbackPage.route('**/api.github.com/repos/Lee7017/pleasejot-ota/contents/support/ios.json*',
       route => route.fulfill({
         status: 200, contentType: 'application/json',
         headers: { 'access-control-allow-origin': '*' },
@@ -121,7 +121,7 @@ for (const c of [
     const fallbackText = await fallbackPage.locator('.ios-sync-line').innerText()
     const fallbackPercent = await fallbackPage.locator('.ios-funding-row strong').innerText()
     const fallbackError = await fallbackPage.locator('.ios-error').count()
-    if (!fallbackText.includes('11/19 16:32') || !fallbackText.includes('刷新') ||
+    if (!fallbackText.includes('11/19 16:32') || !fallbackText.includes('每隔数小时更新') ||
         fallbackPercent !== '0.0%' || fallbackError !== 0)
       failures.push(c.label + ': GitHub API fallback failed: ' + JSON.stringify({
         fallbackText, fallbackPercent, fallbackError
@@ -133,9 +133,9 @@ for (const c of [
     if (!c.mobile) {
       const failedContext = await browser.newContext({ viewport: { width: 1280, height: 900 } })
       const failedPage = await failedContext.newPage()
-      await failedPage.route('**/raw.githubusercontent.com/Lee7017/pleasejot/main/support/ios.json*',
+      await failedPage.route('**/raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json*',
         route => route.fulfill({ status: 503, body: 'Raw unavailable' }))
-      await failedPage.route('**/api.github.com/repos/Lee7017/pleasejot/contents/support/ios.json*',
+      await failedPage.route('**/api.github.com/repos/Lee7017/pleasejot-ota/contents/support/ios.json*',
         route => route.fulfill({ status: 503, body: 'API unavailable' }))
       await failedPage.goto(new URL('download/', origin).href, { waitUntil: 'networkidle', timeout: 45000 })
       const failureText = await failedPage.locator('.ios-sync').innerText()
@@ -164,7 +164,7 @@ for (const c of [
       colorScheme: c.mobile ? 'light' : 'dark'
     })
     const demoPage = await preview.newPage()
-    await demoPage.route('**/api.github.com/repos/Lee7017/pleasejot/contents/support/ios.json*',
+    await demoPage.route('**/api.github.com/repos/Lee7017/pleasejot-ota/contents/support/ios.json*',
       route => route.fulfill({
         status: 200, contentType: 'application/json',
         body: JSON.stringify({ encoding: 'base64', content: Buffer.from(JSON.stringify(mock)).toString('base64') })
@@ -298,7 +298,7 @@ for (const width of [320, 360, 390]) {
     status: 'live', target: 750, raised: 0, supporterCount: 0,
     syncedAt: '2026-11-19T08:32:36.729Z', supportUrl: null, supporters: []
   }
-  await page.route('**/api.github.com/repos/Lee7017/pleasejot/contents/support/ios.json*',
+  await page.route('**/api.github.com/repos/Lee7017/pleasejot-ota/contents/support/ios.json*',
     route => route.fulfill({
       status: 200, contentType: 'application/json',
       body: JSON.stringify({ encoding: 'base64', content: Buffer.from(JSON.stringify(sample)).toString('base64') })
@@ -308,14 +308,14 @@ for (const width of [320, 360, 390]) {
     const row = document.querySelector('.ios-sync-line')
     if (!row) return null
     const left = row.querySelector('span')
-    const right = row.querySelector('button.ios-refresh')
+    const right = row.querySelectorAll('span')[1]
     if (!left || !right) return null
     const outer = row.getBoundingClientRect()
     const a = left.getBoundingClientRect()
     const b = right.getBoundingClientRect()
     return {
       left: left.textContent?.trim(), right: right.textContent?.trim(),
-      // 文本与按钮高度不同，比较垂直中心才是是否处于同一行的判断。
+      // 左右文案需保持同一行，比较垂直中心检查位置。
       sameRow: Math.abs((a.top + a.height / 2) - (b.top + b.height / 2)) < 2,
       fitsWithinCard: a.left >= outer.left - 1 && b.right <= outer.right + 1,
       documentOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
@@ -324,41 +324,11 @@ for (const width of [320, 360, 390]) {
     }
   })
   if (!metrics || metrics.left !== '最近同步：11/19 16:32' ||
-      metrics.right !== '刷新' || !metrics.sameRow ||
+      metrics.right !== '每隔数小时更新' || !metrics.sameRow ||
       !metrics.fitsWithinCard || metrics.documentOverflow > 2 || !metrics.nowrap)
     failures.push('ios-sync-' + width + ': must stay on one line: ' + JSON.stringify(metrics))
   findings.push({ test: 'ios-sync-single-line-' + width, ...metrics })
   await capture(page, 'ios-sync-single-line-' + width + '.png')
-  await context.close()
-}
-
-// 点击「刷新」只能重新读取官网仓库中已发布的 JSON，不会直接查询爱发电。
-{
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
-  const page = await context.newPage()
-  let reads = 0
-  await page.route('**/api.github.com/repos/Lee7017/pleasejot/contents/support/ios.json*', route => {
-    reads += 1
-    const sample = {
-      status: 'live', target: 750, raised: 0, supporterCount: 0,
-      syncedAt: reads === 1 ? '2026-11-19T08:32:36.729Z' : '2026-11-20T01:42:00.000Z',
-      supportUrl: null, supporters: []
-    }
-    return route.fulfill({
-      status: 200, contentType: 'application/json',
-      body: JSON.stringify({ encoding: 'base64', content: Buffer.from(JSON.stringify(sample)).toString('base64') })
-    })
-  })
-  await page.goto(new URL('download/', origin).href, { waitUntil: 'networkidle', timeout: 45000 })
-  const before = await page.locator('.ios-sync-line').innerText()
-  await page.getByRole('button', { name: '刷新赞助统计' }).click()
-  await page.waitForFunction(() =>
-    document.querySelector('.ios-sync-line')?.textContent?.includes('11/20 09:42'), { timeout: 10000 })
-  const after = await page.locator('.ios-sync-line').innerText()
-  if (!before.includes('11/19 16:32') || !after.includes('11/20 09:42') || reads !== 2)
-    failures.push('ios-manual-refresh: did not reload public JSON ' + JSON.stringify({ before, after, reads }))
-  findings.push({ test: 'ios-manual-refresh-reloads-public-json', before, after, reads })
-  await capture(page, 'ios-manual-refresh-mobile.png')
   await context.close()
 }
 
