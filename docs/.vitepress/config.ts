@@ -5,8 +5,8 @@ const base = process.env.SITE_BASE || '/'
 
 export default defineConfig({
   lang: 'zh-CN',
-  title: '灵仓',
-  description: '灵仓（LINGCANG）— 局域网同步、文件树管理与 Super MarkDown',
+  title: 'PleaseJot',
+  description: 'PleaseJot— 局域网同步、文件树管理与 Super MarkDown',
   base,
   // GitHub Pages 无法保证扩展名省略后的直访行为，使用 .html 文档路由
   cleanUrls: false,
@@ -20,11 +20,11 @@ export default defineConfig({
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${base}apple-touch-icon.png` }],
     ['meta', { name: 'theme-color', content: '#f3f4f6', media: '(prefers-color-scheme: light)' }],
     ['meta', { name: 'theme-color', content: '#15171b', media: '(prefers-color-scheme: dark)' }],
-    ['meta', { name: 'description', content: '灵仓（LINGCANG）— 本地优先的 Markdown 笔记与资料管理工具' }]
+    ['meta', { name: 'description', content: 'PleaseJot— 本地优先的 Markdown 笔记与资料管理工具' }]
   ],
   themeConfig: {
     logo: '/logo.svg',
-    siteTitle: '灵仓',
+    siteTitle: 'PleaseJot',
     nav: [
       { text: '首页', link: '/' },
       { text: '下载', link: '/download/' },
@@ -60,6 +60,6 @@ export default defineConfig({
     docFooter: { prev: '上一篇', next: '下一篇' },
     returnToTopLabel: '返回顶部',
     sidebarMenuLabel: '目录',
-    footer: { copyright: 'Copyright © 2026 灵仓（LINGCANG）. All rights reserved.' }
+    footer: { copyright: 'Copyright © 2026 PleaseJot. All rights reserved.' }
   }
 })
