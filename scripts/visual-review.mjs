@@ -315,7 +315,8 @@ for (const width of [320, 360, 390]) {
     const b = right.getBoundingClientRect()
     return {
       left: left.textContent?.trim(), right: right.textContent?.trim(),
-      sameRow: Math.abs(a.top - b.top) < 2,
+      // 文本与按钮高度不同，比较垂直中心才是是否处于同一行的判断。
+      sameRow: Math.abs((a.top + a.height / 2) - (b.top + b.height / 2)) < 2,
       fitsWithinCard: a.left >= outer.left - 1 && b.right <= outer.right + 1,
       documentOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
       rowWidth: Math.round(outer.width), contentWidth: Math.round(a.width + b.width),
