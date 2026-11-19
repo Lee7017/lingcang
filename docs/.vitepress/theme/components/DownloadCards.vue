@@ -10,7 +10,7 @@ const downloadPlatforms = releasePlatforms.filter(item => item.name !== 'iOS / i
   <main class="page-design download-page section-width">
     <div class="page-intro">
       <span class="eyebrow">软件下载</span>
-      <h1>下载灵仓</h1>
+      <h1>下载 PleaseJot</h1>
       <p>选择适合你设备的安装版本。页面只提供实际发布的 GitHub Releases 资源。</p>
     </div>
     <section class="invite-banner" aria-labelledby="download-invite-title">
