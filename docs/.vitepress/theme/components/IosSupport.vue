@@ -79,7 +79,7 @@ function decodeGitHubContent(value: unknown): unknown {
   if (!value || typeof value !== 'object') throw new Error('GitHub API 返回格式错误')
   const file = value as Record<string, unknown>
   if (file.encoding !== 'base64' || typeof file.content !== 'string') throw new Error('GitHub API 数据编码错误')
-  const bytes = Uint8Array.from(atob(file.content.replace(/\\s/g, '')), char => char.charCodeAt(0))
+  const bytes = Uint8Array.from(atob(file.content.replace(/\s/g, '')), char => char.charCodeAt(0))
   return JSON.parse(new TextDecoder().decode(bytes))
 }
 
