@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue'
 import { Clock3, MessageSquareText, ShieldCheck } from 'lucide-vue-next'
 import { tencentQuestionnaireEmbedSrc } from '../data/feedback'
 
@@ -17,6 +18,15 @@ const embedSrc = (() => {
     return ''
   }
 })()
+
+// 仅在当前反馈路由启用：手机端禁止官网外层滚动，离开路由即恢复。
+const immersiveClass = 'feedback-immersive'
+onMounted(() => {
+  if (embedSrc) document.documentElement.classList.add(immersiveClass)
+})
+onUnmounted(() => {
+  document.documentElement.classList.remove(immersiveClass)
+})
 </script>
 
 <template>
@@ -39,8 +49,8 @@ const embedSrc = (() => {
         <iframe
           :src="embedSrc"
           title="PleaseJot 用户反馈问卷（腾讯问卷）"
-          loading="lazy"
-          scrolling="no"
+          loading="eager"
+          scrolling="auto"
           referrerpolicy="strict-origin-when-cross-origin"
         ></iframe>
       </div>
@@ -103,7 +113,6 @@ const embedSrc = (() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 16px;
   padding: 21px 24px;
   border-bottom: 1px solid var(--xs-rule);
@@ -128,10 +137,7 @@ const embedSrc = (() => {
 .feedback-frame iframe {
   display: block;
   width: 100%;
-  /* 腾讯问卷为跨域内容，无法直接读取其内部高度。
-     预留足够的完整答题空间，让用户主要滚动官网页面。 */
-  height: 2100px;
-  overflow: hidden;
+  height: clamp(620px, calc(100dvh - 280px), 850px);
   border: 0;
   border-radius: 12px;
   background: #fff;
@@ -171,24 +177,101 @@ const embedSrc = (() => {
   line-height: 1.8;
 }
 .feedback-privacy svg { flex: none; margin-top: 1px; }
-@media (max-width: 680px) {
-  .feedback-page { padding: 29px 16px 54px; }
-  .feedback-intro { margin-bottom: 21px; }
-  .feedback-intro h1 { font-size: 28px; }
-  .feedback-intro > p { font-size: 12px; }
-  .feedback-panel { border-radius: 16px; }
-  .feedback-panel-head { padding: 16px; gap: 12px; }
-  .feedback-panel-head h2 { font-size: 15px; }
-  .feedback-frame { padding: 8px; }
-  .feedback-frame iframe {
-    height: 2600px;
-    border-radius: 9px;
+
+/* 手机、触屏小屏：顶部保留官网导航 + 一行标题，问卷占满剩余可见区域。
+   只滚动腾讯问卷 iframe，禁止外层滚动；不再猜测问卷总高度。 */
+@media (max-width: 767px), (pointer: coarse) and (max-width: 1023px) {
+  .feedback-page {
+    position: fixed;
+    z-index: 1;
+    inset: var(--vp-nav-height, 64px) 0 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: var(--vp-c-bg);
   }
-  .feedback-empty { min-height: 320px; padding: 48px 18px; }
-  .feedback-empty h2 { font-size: 16px; }
-  .feedback-privacy { justify-content: flex-start; font-size: 11px; }
+  .feedback-intro {
+    display: flex;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--xs-rule);
+    background: var(--vp-c-bg);
+  }
+  .feedback-eyebrow, .feedback-intro > p, .feedback-panel-head, .feedback-privacy { display: none; }
+  .feedback-intro h1 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 720;
+    letter-spacing: -.025em;
+    line-height: 1.4;
+  }
+  .feedback-panel {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .feedback-frame {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .feedback-frame iframe {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    overflow: auto;
+    background: #fff;
+  }
+  .feedback-empty {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 30px 18px;
+  }
 }
-@media (max-width: 375px) {
-  .feedback-frame iframe { height: 2900px; }
+</style>
+
+<style>
+/* 必须是全局选择器：禁止滚动的是 html/body，不是 Vue 组件容器。
+   路由切换时 onUnmounted 会移除 class，不影响网站其他页面。 */
+@media (max-width: 767px), (pointer: coarse) and (max-width: 1023px) {
+  html.feedback-immersive,
+  html.feedback-immersive body {
+    height: 100%;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+    scrollbar-gutter: auto;
+  }
+  html.feedback-immersive .Layout .VPFooter,
+  html.feedback-immersive .xs-back-to-top {
+    display: none !important;
+  }
 }
 </style>
