@@ -47,6 +47,9 @@ try {
       navLink: [...document.querySelectorAll('a')].some(a => a.textContent?.trim() === '用户反馈' && a.getAttribute('href')?.includes('/feedback/')),
       placeholder: !!document.querySelector('.feedback-empty'),
       iframeCount: document.querySelectorAll('.feedback-frame iframe').length,
+      newWindowLinkCount: [...document.querySelectorAll('.feedback-panel a')].filter(a => a.target === '_blank').length,
+      iframeScrolling: document.querySelector('.feedback-frame iframe')?.getAttribute('scrolling') || null,
+      iframeHeight: document.querySelector('.feedback-frame iframe')?.getBoundingClientRect().height || 0,
       iframeSrc: document.querySelector('.feedback-frame iframe')?.getAttribute('src') || '',
       overflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth)
     }))
@@ -55,6 +58,9 @@ try {
     // An empty URL must show the placeholder; a real URL must show exactly one iframe.
     if (state.placeholder === (state.iframeCount > 0) || state.iframeCount > 1)
       failures.push(variant.label + ': feedback iframe/placeholder state is incorrect')
+    if (state.newWindowLinkCount !== 0) failures.push(variant.label + ': external feedback button still visible')
+    if (state.iframeCount === 1 && (state.iframeScrolling !== 'no' || state.iframeHeight < (variant.mobile ? 2500 : 2000)))
+      failures.push(variant.label + ': inner scroll is not disabled or iframe too short')
     if (state.iframeCount === 1 && !/^https:\/\/(?:[a-z0-9-]+\.)*(?:wj\.qq\.com|wesurvey\.com)\//i.test(state.iframeSrc))
       failures.push(variant.label + ': unexpected iframe URL')
     if (state.overflow > 2) failures.push(variant.label + ': horizontal overflow ' + state.overflow)
@@ -63,10 +69,17 @@ try {
     // External-site embed details are reported separately from local layout checks.
     // On CI, network failure may be unrelated to iframe policy.
     const frame = page.frames().find(f => f.url().startsWith('https://wj.qq.com/'))
+    const embeddedDimensions = frame
+      ? await frame.evaluate(() => ({
+          viewport: window.innerHeight,
+          bodyHeight: document.body?.scrollHeight ?? 0,
+          documentHeight: document.documentElement?.scrollHeight ?? 0
+        })).catch(() => null)
+      : null
     const frameData = frame
       ? await frame.locator('body').innerText({ timeout: 5000 }).then(text => text.slice(0, 500)).catch(() => null)
       : null
-    console.log(JSON.stringify({ test: 'feedback-' + variant.label, ...state, errors, embeddedResponses, embedErrors, frameUrl: frame?.url() ?? null, frameBody: frameData }))
+    console.log(JSON.stringify({ test: 'feedback-' + variant.label, ...state, errors, embeddedResponses, embedErrors, frameUrl: frame?.url() ?? null, frameBody: frameData, embeddedDimensions }))
     await context.close()
   }
 } finally {

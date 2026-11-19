@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Clock3, ExternalLink, MessageSquareText, ShieldCheck } from 'lucide-vue-next'
+import { Clock3, MessageSquareText, ShieldCheck } from 'lucide-vue-next'
 import { tencentQuestionnaireEmbedSrc } from '../data/feedback'
 
 // 仅接受腾讯问卷官方 HTTPS 域名，防止误贴其他网站或不安全的链接。
@@ -33,10 +33,6 @@ const embedSrc = (() => {
           <h2>意见与建议</h2>
           <p>填写后将直接提交至腾讯问卷。</p>
         </div>
-        <a v-if="embedSrc" :href="embedSrc" class="xs-button secondary feedback-open"
-          target="_blank" rel="noopener noreferrer">
-          <ExternalLink :size="16" /> 在新窗口填写
-        </a>
       </div>
 
       <div v-if="embedSrc" class="feedback-frame">
@@ -44,6 +40,7 @@ const embedSrc = (() => {
           :src="embedSrc"
           title="PleaseJot 用户反馈问卷（腾讯问卷）"
           loading="lazy"
+          scrolling="no"
           referrerpolicy="strict-origin-when-cross-origin"
         ></iframe>
       </div>
@@ -124,11 +121,6 @@ const embedSrc = (() => {
   font-size: 12px;
   line-height: 1.7;
 }
-.feedback-open {
-  min-height: 40px;
-  padding: 0 14px;
-  font-size: 12px;
-}
 .feedback-frame {
   padding: 14px;
   background: var(--xs-soft);
@@ -136,7 +128,10 @@ const embedSrc = (() => {
 .feedback-frame iframe {
   display: block;
   width: 100%;
-  height: max(750px, calc(100dvh - 260px));
+  /* 腾讯问卷为跨域内容，无法直接读取其内部高度。
+     预留足够的完整答题空间，让用户主要滚动官网页面。 */
+  height: 2100px;
+  overflow: hidden;
   border: 0;
   border-radius: 12px;
   background: #fff;
@@ -184,17 +179,16 @@ const embedSrc = (() => {
   .feedback-panel { border-radius: 16px; }
   .feedback-panel-head { padding: 16px; gap: 12px; }
   .feedback-panel-head h2 { font-size: 15px; }
-  .feedback-open { width: 100%; }
   .feedback-frame { padding: 8px; }
   .feedback-frame iframe {
-    height: max(680px, calc(100dvh - 200px));
+    height: 2600px;
     border-radius: 9px;
   }
   .feedback-empty { min-height: 320px; padding: 48px 18px; }
   .feedback-empty h2 { font-size: 16px; }
   .feedback-privacy { justify-content: flex-start; font-size: 11px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .feedback-open { transition: none; }
+@media (max-width: 375px) {
+  .feedback-frame iframe { height: 2900px; }
 }
 </style>
