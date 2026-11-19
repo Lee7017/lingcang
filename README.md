@@ -1,4 +1,4 @@
-# 灵仓（LINGCANG）官网 · VitePress + Vue 源码
+# PleaseJot 官网 · VitePress + Vue 源码
 
 本项目依据对话中确认的官网结构，实现可编辑、可部署的 VitePress 网站。它不是 ChatGPT 内置组件的直接代码导出，而是用真实 Vue 单文件组件重新实现该布局。
 
@@ -15,7 +15,7 @@
 
 - **顶部导航**：首页、下载、使用文档、在线体验、更新日志、关于（包含开源致谢和第三方许可证）。
 - **独立侧边栏**：使用文档显示教程目录；更新日志显示按年份和版本整理的版本导航。首页、下载、在线体验、关于等页面不显示左侧栏。
-- **全站版权页脚**：使用 VitePress 原生 Footer，显示 `Copyright © 2026 灵仓（LINGCANG）. All rights reserved.`；教程上一篇／下一篇属于独立的文档导航。
+- **全站版权页脚**：使用 VitePress 原生 Footer，显示 `Copyright © 2026 PleaseJot. All rights reserved.`；教程上一篇／下一篇属于独立的文档导航。
 - **首页三个重点**：局域网 P2P 同步；首页文件树；Super MarkDown（手写/音视频/Office/PDF，Office 仅渲染）。
 - **唯一下载来源**：GitHub Releases。没有 123 云盘备用下载或公开分享。
 - **123 云盘**：仅作为软件内云端同步的未来规划，未实现时不宣传为已支持。
@@ -60,7 +60,7 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 
 ## 将现有 Web Mock 接入 `/demo/`
 
-根据灵仓原有设计，React + Vditor UI 使用构建期选定的内存 Mock API；**不可直接把 Native 版本打包成 Web 演示**。现有应用尚无公开 `build:demo` 入口，必须由应用工程单独添加并验证。
+根据 PleaseJot 原有设计，React + Vditor UI 使用构建期选定的内存 Mock API；**不可直接把 Native 版本打包成 Web 演示**。现有应用尚无公开 `build:demo` 入口，必须由应用工程单独添加并验证。
 
 接入步骤：
 
@@ -103,13 +103,12 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 
 正式上线前，还需要核对实际发布版本、准确截图、第三方许可证、项目正式 GitHub 仓库名、DNS 及所有平台下载链接。
 
-## 品牌名称与仓库改名
+## PleaseJot 品牌与官网地址
 
-- 产品中文名是 **灵仓**，英文名称为 **LINGCANG**；官网不再使用旧品牌名称。
-- GitHub 仓库管理员可以在仓库 Settings → General 中将仓库重命名为 `lingcang`。
-- 网站发布工作流依据 `github.event.repository.name` 自动设置 Pages 路径；下载页面通过构建时的 `VITE_GITHUB_REPOSITORY` 自动生成 GitHub Releases 链接。仓库重命名后重新运行 Pages 部署与浏览器审核，无须在源代码中逐一替换路径。
-- GitHub 不会自动重定向改名前的 GitHub Pages 项目站点 URL，外部分享的旧网址需要更换。
-- 当前图形标识为已有资源；如要重新设计品牌图标，需同时更新 `docs/public/logo.svg` 与 `docs/public/apple-touch-icon.png`。
+- 产品名称统一使用 **PleaseJot**，包括网站标题、SEO 描述、首页、下载、文档、内测申请和页脚。
+- 为保留现有用户访问路径，**主仓库仍为** `Lee7017/lingcang`，**官网地址仍为** `https://lee7017.github.io/lingcang/`。产品更名不等于更改仓库名或 GitHub Pages 路径。
+- 发布工作流依据 `github.event.repository.name` 设置 Pages 路径；下载页面根据构建时的 `VITE_GITHUB_REPOSITORY` 生成 GitHub Releases 链接。现有完整安装包与 OTA 更新链接不作更改。
+- 原图形标识暂时沿用；SVG 的无障碍名称已更新。确认新的图标后，再同时替换 `docs/public/logo.svg` 和对应 PNG 图标。
 
 ## 构建与浏览器检查
 
