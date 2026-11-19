@@ -28,11 +28,12 @@ const percent = computed(() => raised.value === null || target.value <= 0
   ? 0 : Math.min(100, Math.max(0, raised.value / target.value * 100)))
 const supporters = computed(() => configured.value ? snapshot.value?.supporters ?? [] : [])
 const syncedText = computed(() => {
-  if (!snapshot.value?.syncedAt || !configured.value) return '尚未同步'
+  if (!snapshot.value) return error.value ? '读取失败' : '正在获取'
+  if (!snapshot.value.syncedAt || !configured.value) return '尚未同步'
   const date = new Date(snapshot.value.syncedAt)
   return Number.isNaN(date.getTime()) ? '时间未知' : new Intl.DateTimeFormat('zh-CN', {
     timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hour12: false
+    hour: '2-digit', hour12: false
   }).format(date)
 })
 
@@ -69,17 +70,34 @@ function parseSnapshot(value: unknown): IosSupportSnapshot {
   }
 }
 
-const snapshotUrl = 'https://raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json'
+// 只读取当前 PleaseJot OTA 仓库；Raw 请求失败时换用 GitHub Contents API。
+// 两条地址是同一份公开文件，不涉及旧仓库兼容，也不缓存过期的赞助数据。
+const snapshotRawUrl = 'https://raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json'
+const snapshotApiUrl = 'https://api.github.com/repos/Lee7017/pleasejot-ota/contents/support/ios.json'
+
+function decodeGitHubContent(value: unknown): unknown {
+  if (!value || typeof value !== 'object') throw new Error('GitHub API 返回格式错误')
+  const file = value as Record<string, unknown>
+  if (file.encoding !== 'base64' || typeof file.content !== 'string') throw new Error('GitHub API 数据编码错误')
+  const bytes = Uint8Array.from(atob(file.content.replace(/\\s/g, '')), char => char.charCodeAt(0))
+  return JSON.parse(new TextDecoder().decode(bytes))
+}
 
 async function loadSnapshot() {
   error.value = ''
-  try {
-    const res = await fetch(snapshotUrl + '?v=' + Date.now(), { cache: 'no-store' })
-    if (!res.ok) throw new Error('HTTP ' + res.status)
-    snapshot.value = parseSnapshot(await res.json())
-  } catch {
-    error.value = '进度加载失败，请稍后重新打开页面。'
+  for (const source of ['raw', 'api'] as const) {
+    try {
+      const url = source === 'raw' ? snapshotRawUrl + '?v=' + Date.now() : snapshotApiUrl
+      const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(10000) })
+      if (!res.ok) throw new Error('HTTP ' + res.status)
+      const json: unknown = await res.json()
+      snapshot.value = parseSnapshot(source === 'raw' ? json : decodeGitHubContent(json))
+      return
+    } catch (reason) {
+      console.warn('PleaseJot iOS 支持数据读取失败：' + source, reason)
+    }
   }
+  error.value = '进度数据读取失败，请检查网络后重新打开页面。'
 }
 
 onMounted(loadSnapshot)
@@ -108,7 +126,7 @@ onMounted(loadSnapshot)
       </div>
       <div class="ios-progress-track" role="progressbar" :aria-valuemin="0" :aria-valuemax="100"
         :aria-valuenow="configured ? Math.round(percent) : undefined"
-        :aria-valuetext="configured ? percent.toFixed(1) + '%' : '尚未同步'">
+        :aria-valuetext="configured ? percent.toFixed(1) + '%' : (snapshot ? '尚未同步' : (error ? '读取失败' : '正在获取'))">
         <div class="ios-progress-fill" :style="{ width: percent + '%' }"></div>
       </div>
     </div>
