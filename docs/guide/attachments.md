@@ -4,7 +4,7 @@ title: 手写与多格式附件
 
 # 手写与多格式附件
 
-**Super MarkDown** 是灵仓对其扩展 Markdown 使用方式的产品称呼。
+**Super MarkDown** 是 PleaseJot 对其扩展 Markdown 使用方式的产品称呼。
 
 ## 内容类型
 
