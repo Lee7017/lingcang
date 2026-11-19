@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { ArrowUpRight, HeartHandshake } from 'lucide-vue-next'
+import { ArrowUpRight, HeartHandshake, RefreshCw } from 'lucide-vue-next'
 
 interface PublicSupporter {
   name: string
@@ -19,6 +19,7 @@ interface IosSupportSnapshot {
 const SUPPORT_URL = 'https://afdian.com/item/d9aa8642e2b411f181af52540025c377'
 const snapshot = ref<IosSupportSnapshot | null>(null)
 const error = ref('')
+const loading = ref(false)
 const money = new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', minimumFractionDigits: 2 })
 
 const configured = computed(() => snapshot.value?.status === 'live')
@@ -74,10 +75,10 @@ function parseSnapshot(value: unknown): IosSupportSnapshot {
   }
 }
 
-// 只读取当前 PleaseJot OTA 仓库；Raw 请求失败时换用 GitHub Contents API。
-// 两条地址是同一份公开文件，不涉及旧仓库兼容，也不缓存过期的赞助数据。
-const snapshotRawUrl = 'https://raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json'
-const snapshotApiUrl = 'https://api.github.com/repos/Lee7017/pleasejot-ota/contents/support/ios.json'
+// 官网直接读取同仓库 support/ios.json，JSON 不会打包进 Pages，也不会触发 Pages 构建。
+// 「刷新」仅重新读取公开 JSON；真正的爱发电同步只能由管理员手动运行 GitHub Actions。
+const snapshotRawUrl = 'https://raw.githubusercontent.com/Lee7017/pleasejot/main/support/ios.json'
+const snapshotApiUrl = 'https://api.github.com/repos/Lee7017/pleasejot/contents/support/ios.json'
 
 function decodeGitHubContent(value: unknown): unknown {
   if (!value || typeof value !== 'object') throw new Error('GitHub API 返回格式错误')
@@ -100,29 +101,35 @@ async function fetchPublicJson(url: string): Promise<unknown> {
 }
 
 async function loadSnapshot() {
+  if (loading.value) return
+  loading.value = true
   error.value = ''
-  let rawUnconfigured: IosSupportSnapshot | null = null
-  for (const source of ['raw', 'api'] as const) {
-    try {
-      const url = source === 'raw' ? snapshotRawUrl + '?v=' + Date.now() : snapshotApiUrl
-      const json = await fetchPublicJson(url)
-      const data = parseSnapshot(source === 'raw' ? json : decodeGitHubContent(json))
-      // Raw CDN 可能还缓存旧的 unconfigured，交给 API 核对当前状态。
-      if (source === 'raw' && data.status === 'unconfigured') {
-        rawUnconfigured = data
-        continue
+  try {
+    let rawUnconfigured: IosSupportSnapshot | null = null
+    for (const source of ['api', 'raw'] as const) {
+      try {
+        // 手动刷新优先走 GitHub API，避免 Raw CDN 返回几分钟前的旧内容。
+        const url = source === 'api' ? snapshotApiUrl + '?v=' + Date.now() : snapshotRawUrl + '?v=' + Date.now()
+        const json = await fetchPublicJson(url)
+        const data = parseSnapshot(source === 'raw' ? json : decodeGitHubContent(json))
+        if (data.status === 'unconfigured') {
+          rawUnconfigured = data
+          continue
+        }
+        snapshot.value = data
+        return
+      } catch (reason) {
+        console.warn('PleaseJot iOS 支持数据读取失败：' + source, reason)
       }
-      snapshot.value = data
-      return
-    } catch (reason) {
-      console.warn('PleaseJot iOS 支持数据读取失败：' + source, reason)
     }
+    if (rawUnconfigured) {
+      snapshot.value = rawUnconfigured
+      return
+    }
+    error.value = '进度数据读取失败，当前显示的是上次成功获取的数据。'
+  } finally {
+    loading.value = false
   }
-  if (rawUnconfigured) {
-    snapshot.value = rawUnconfigured
-    return
-  }
-  error.value = '进度数据读取失败，请检查网络后重新打开页面。'
 }
 
 onMounted(loadSnapshot)
@@ -159,7 +166,12 @@ onMounted(loadSnapshot)
     <div class="ios-sync">
       <div class="ios-sync-line">
         <span>最近同步：{{ syncedText }}</span>
-        <span>每隔数小时更新</span>
+        <button type="button" class="ios-refresh" :disabled="loading" :aria-busy="loading"
+          aria-label="刷新赞助统计" title="重新读取公开数据；真正更新需管理员在 GitHub Actions 手动运行"
+          @click="loadSnapshot">
+          <RefreshCw :size="12" :class="{ 'ios-refresh-spinning': loading }" />
+          <span>刷新</span>
+        </button>
       </div>
       <p v-if="error" class="ios-error" role="status">{{ error }}</p>
     </div>
@@ -221,6 +233,12 @@ onMounted(loadSnapshot)
 .ios-progress-fill { height:100%; background:var(--xs-ink); border-radius:inherit; transition:width .4s ease; }
 .ios-sync { margin-top:17px; }
 .ios-sync-line { display:flex; align-items:center; justify-content:space-between; gap:8px; white-space:nowrap; color:var(--xs-muted); font-size:11px; line-height:1.65; }
+.ios-refresh { display:inline-flex; align-items:center; justify-content:center; gap:4px; flex:none; padding:2px 0 2px 6px; border:0; border-radius:6px; background:transparent; color:inherit; font:inherit; cursor:pointer; white-space:nowrap; }
+.ios-refresh:hover { color:var(--xs-ink); }
+.ios-refresh:focus-visible { outline:2px solid var(--xs-ink); outline-offset:2px; }
+.ios-refresh:disabled { opacity:.6; cursor:default; }
+.ios-refresh-spinning { animation:ios-refresh-spin .8s linear infinite; }
+@keyframes ios-refresh-spin { to { transform:rotate(360deg); } }
 .ios-error { margin:7px 0 0!important; color:var(--xs-muted); font-size:11px!important; }
 .ios-carousel { margin-top:20px; min-width:0; }
 .ios-danmaku-panel { position:relative; overflow:hidden; height:145px; min-width:0; isolation:isolate; border:1px solid var(--xs-rule); border-radius:14px; background:var(--xs-soft); }
