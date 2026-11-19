@@ -115,7 +115,7 @@ for (const c of [
       colorScheme: c.mobile ? 'light' : 'dark'
     })
     const demoPage = await preview.newPage()
-    await demoPage.route('**/Lee7017/lingcang-ota/main/support/ios.json*',
+    await demoPage.route('**/Lee7017/*-ota/main/support/ios.json*',
       route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mock) }))
     await demoPage.goto(new URL('download/', origin).href, { waitUntil: 'networkidle', timeout: 45000 })
     const layoutSelector = c.mobile ? '.ios-danmaku-layout--mobile' : '.ios-danmaku-layout--desktop'
@@ -160,7 +160,7 @@ for (const c of [
     await preview.close()
   }
   if (c.label === 'downloads-desktop') {
-    const expectedRepository = process.env.GITHUB_REPOSITORY || 'Lee7017/lingcang'
+    const expectedRepository = process.env.GITHUB_REPOSITORY || 'Lee7017/pleasejot'
     if (await page.getByText('下载链路测试 · PNG 图片').count()) failures.push('removed test-download block is still visible')
     if (await page.getByRole('link', { name: /下载测试图片/ }).count()) failures.push('removed test-download link is still visible')
     const releasesLink = page.getByRole('link', { name: /查看所有历史版本/ })
