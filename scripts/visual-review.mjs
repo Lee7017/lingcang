@@ -90,7 +90,7 @@ for (const c of [
       failures.push(c.label + ': iOS support must replace the fourth download card without an extra block')
     if (iosCard.supportTitle !== 'iOS 开发者支持计划' || !iosCard.supporterArea ||
         !iosCard.progressArea || !iosCard.danmakuArea || !iosCard.danmakuHeadingRemoved ||
-        !iosCard.linkIcon || iosCard.supportActionHeight !== 32 || !iosCard.schedule?.includes('每隔数小时更新，间隔不固定') ||
+        !iosCard.linkIcon || iosCard.supportActionHeight !== 32 || !iosCard.schedule?.includes('每隔数小时更新') ||
         !iosCard.linkInHeader || iosCard.refreshButtonCount !== 0 || iosCard.removedCopyPresent)
       failures.push(c.label + ': iOS support card is missing its required content')
     if (iosCard.supportLink !== 'https://afdian.com/item/d9aa8642e2b411f181af52540025c377')
@@ -121,7 +121,7 @@ for (const c of [
     const fallbackText = await fallbackPage.locator('.ios-sync-line').innerText()
     const fallbackPercent = await fallbackPage.locator('.ios-funding-row strong').innerText()
     const fallbackError = await fallbackPage.locator('.ios-error').count()
-    if (!fallbackText.includes('2026/11/19') || !fallbackText.includes('16:32') ||
+    if (!fallbackText.includes('11/19 16:32') || !fallbackText.includes('每隔数小时更新') ||
         fallbackPercent !== '0.0%' || fallbackError !== 0)
       failures.push(c.label + ': GitHub API fallback failed: ' + JSON.stringify({
         fallbackText, fallbackPercent, fallbackError
@@ -282,6 +282,45 @@ for (const c of [
   }
   if (c.label === 'home-desktop' || c.label === 'home-mobile') await printReference(page, c.label)
   if (c.label === 'downloads-desktop') await printReference(page, c.label)
+  await context.close()
+}
+
+// 320/360/390px 真正检查左右文案保持同一行且都位于容器内。
+for (const width of [320, 360, 390]) {
+  const context = await browser.newContext({
+    viewport: { width, height: 800 }, isMobile: true, hasTouch: true
+  })
+  const page = await context.newPage()
+  const sample = {
+    status: 'live', target: 750, raised: 0, supporterCount: 0,
+    syncedAt: '2026-11-19T08:32:36.729Z', supportUrl: null, supporters: []
+  }
+  await page.route('**/raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json*',
+    route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(sample) }))
+  await page.goto(new URL('download/', origin).href, { waitUntil: 'networkidle', timeout: 45000 })
+  const metrics = await page.evaluate(() => {
+    const row = document.querySelector('.ios-sync-line')
+    if (!row) return null
+    const [left, right] = row.querySelectorAll('span')
+    if (!left || !right) return null
+    const outer = row.getBoundingClientRect()
+    const a = left.getBoundingClientRect()
+    const b = right.getBoundingClientRect()
+    return {
+      left: left.textContent?.trim(), right: right.textContent?.trim(),
+      sameRow: Math.abs(a.top - b.top) < 2,
+      fitsWithinCard: a.left >= outer.left - 1 && b.right <= outer.right + 1,
+      documentOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+      rowWidth: Math.round(outer.width), contentWidth: Math.round(a.width + b.width),
+      nowrap: getComputedStyle(row).flexWrap === 'nowrap'
+    }
+  })
+  if (!metrics || metrics.left !== '最近同步：11/19 16:32' ||
+      metrics.right !== '每隔数小时更新' || !metrics.sameRow ||
+      !metrics.fitsWithinCard || metrics.documentOverflow > 2 || !metrics.nowrap)
+    failures.push('ios-sync-' + width + ': must stay on one line: ' + JSON.stringify(metrics))
+  findings.push({ test: 'ios-sync-single-line-' + width, ...metrics })
+  await capture(page, 'ios-sync-single-line-' + width + '.png')
   await context.close()
 }
 
