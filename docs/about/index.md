@@ -1,12 +1,12 @@
 ---
-title: 关于灵仓
+title: 关于 PleaseJot
 sidebar: false
 aside: false
 ---
 
-# 关于灵仓
+# 关于 PleaseJot
 
-灵仓是围绕 Markdown 笔记、首页文件树、局域网同步与多格式附件构建的个人资料管理工具。
+PleaseJot 是围绕 Markdown 笔记、首页文件树、局域网同步与多格式附件构建的个人资料管理工具。
 
 希望将日常记录、工作文档和学习资料整理成由用户自行保存和管理的文件，而不是将内容限制在单一页面里。
 
