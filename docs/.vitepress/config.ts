@@ -31,7 +31,8 @@ export default defineConfig({
       { text: '使用文档', link: '/guide/' },
       { text: '在线体验', link: '/demo/' },
       { text: '更新日志', link: '/changelog/' },
-      { text: '关于', link: '/about/' }
+      { text: '关于', link: '/about/' },
+      { text: '用户反馈', link: '/feedback/' }
     ],
     sidebar: {
       '/guide/': [

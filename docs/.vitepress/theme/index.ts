@@ -9,6 +9,7 @@ import DemoNotice from './components/DemoNotice.vue'
 import ScreenshotPage from './components/ScreenshotPage.vue'
 import InviteRequest from './components/InviteRequest.vue'
 import BackToTop from './components/BackToTop.vue'
+import FeedbackForm from './components/FeedbackForm.vue'
 import './custom.css'
 
 export default {
@@ -33,5 +34,6 @@ export default {
     app.component('DemoNotice', DemoNotice)
     app.component('ScreenshotPage', ScreenshotPage)
     app.component('InviteRequest', InviteRequest)
+    app.component('FeedbackForm', FeedbackForm)
   }
 } satisfies Theme
