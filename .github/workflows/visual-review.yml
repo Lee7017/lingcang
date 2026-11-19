@@ -41,9 +41,9 @@ jobs:
           PREVIEW_URL: http://127.0.0.1:4173/${{ github.event.repository.name }}/
         run: |
           set -euo pipefail
-          mkdir -p "/tmp/lingcang-site-preview${SITE_BASE}"
-          cp -a docs/.vitepress/dist/. "/tmp/lingcang-site-preview${SITE_BASE}"
-          python3 -m http.server 4173 --bind 127.0.0.1 --directory /tmp/lingcang-site-preview > /tmp/lingcang-preview.log 2>&1 &
+          mkdir -p "/tmp/pleasejot-site-preview${SITE_BASE}"
+          cp -a docs/.vitepress/dist/. "/tmp/pleasejot-site-preview${SITE_BASE}"
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory /tmp/pleasejot-site-preview > /tmp/pleasejot-preview.log 2>&1 &
           for i in {1..30}; do
             if curl -fsS -o /dev/null "${PREVIEW_URL}"; then break; fi
             sleep 1
@@ -54,6 +54,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lingcang-visual-review
-          path: lingcang-visual-review/
+          name: pleasejot-visual-review
+          path: pleasejot-visual-review/
           if-no-files-found: warn
