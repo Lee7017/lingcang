@@ -810,7 +810,7 @@ try {
             overflow: Math.max(0, root.scrollWidth - innerWidth)
           }
         })
-        if (menu.appearanceCount || menu.linkCount !== 6)
+        if (menu.appearanceCount || menu.linkCount !== 7)
           failures.push(label + ': old appearance control or missing menu links ' + JSON.stringify(menu))
         const expectedOpenColor = variant.preference === 'dark' ? 'f1f3f5' : '17191d'
         if (!menu.closeColor?.includes(expectedOpenColor) || !menu.menuColor)
