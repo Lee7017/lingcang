@@ -106,8 +106,9 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 ## PleaseJot 品牌与官网地址
 
 - 产品名称统一使用 **PleaseJot**，包括网站标题、SEO 描述、首页、下载、文档、内测申请和页脚。
-- 为保留现有用户访问路径，**主仓库仍为** `Lee7017/lingcang`，**官网地址仍为** `https://lee7017.github.io/lingcang/`。产品更名不等于更改仓库名或 GitHub Pages 路径。
-- 发布工作流依据 `github.event.repository.name` 设置 Pages 路径；下载页面根据构建时的 `VITE_GITHUB_REPOSITORY` 生成 GitHub Releases 链接。现有完整安装包与 OTA 更新链接不作更改。
+- **仓库名由管理员在 GitHub 设置中修改：** 主仓库从 `Lee7017/lingcang` 更名为 `Lee7017/pleasejot`；OTA 仓库从 `Lee7017/lingcang-ota` 更名为 `Lee7017/pleasejot-ota`。
+- **更名后的官网地址：** `https://lee7017.github.io/pleasejot/`。GitHub Pages 的项目网址不会自动沿用旧的 `/lingcang/` 地址；需要检查 Pages 部署成功并更新对外链接。
+- 发布工作流根据 `github.event.repository.name` 设置 Pages 路径，下载页面由 `VITE_GITHUB_REPOSITORY` 生成 Releases 链接；OTA 的公开 iOS 支持数据优先读取 `pleasejot-ota`，暂保留旧路径作迁移兼容。若设置了固定的 `SITE_BASE` 或客户端内写死更新地址，也需要检查并调整。
 - 原图形标识暂时沿用；SVG 的无障碍名称已更新。确认新的图标后，再同时替换 `docs/public/logo.svg` 和对应 PNG 图标。
 
 ## 构建与浏览器检查
