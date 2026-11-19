@@ -90,7 +90,7 @@ for (const c of [
       failures.push(c.label + ': iOS support must replace the fourth download card without an extra block')
     if (iosCard.supportTitle !== 'iOS 开发者支持计划' || !iosCard.supporterArea ||
         !iosCard.progressArea || !iosCard.danmakuArea || !iosCard.danmakuHeadingRemoved ||
-        !iosCard.linkIcon || iosCard.supportActionHeight !== 32 || !iosCard.schedule?.includes('30 分钟') ||
+        !iosCard.linkIcon || iosCard.supportActionHeight !== 32 || !iosCard.schedule?.includes('每隔数小时更新，间隔不固定') ||
         !iosCard.linkInHeader || iosCard.refreshButtonCount !== 0 || iosCard.removedCopyPresent)
       failures.push(c.label + ': iOS support card is missing its required content')
     if (iosCard.supportLink !== 'https://afdian.com/item/d9aa8642e2b411f181af52540025c377')
