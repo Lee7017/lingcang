@@ -69,25 +69,17 @@ function parseSnapshot(value: unknown): IosSupportSnapshot {
   }
 }
 
-// 仓库更名期间优先读取新地址；旧地址只作过渡兼容。
-const snapshotUrls = [
-  'https://raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json',
-  'https://raw.githubusercontent.com/Lee7017/lingcang-ota/main/support/ios.json'
-]
+const snapshotUrl = 'https://raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json'
 
 async function loadSnapshot() {
   error.value = ''
-  for (const url of snapshotUrls) {
-    try {
-      const res = await fetch(url + '?v=' + Date.now(), { cache: 'no-store' })
-      if (!res.ok) throw new Error('HTTP ' + res.status)
-      snapshot.value = parseSnapshot(await res.json())
-      return
-    } catch {
-      // 继续尝试旧仓库地址；所有地址失败后才提示加载失败。
-    }
+  try {
+    const res = await fetch(snapshotUrl + '?v=' + Date.now(), { cache: 'no-store' })
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    snapshot.value = parseSnapshot(await res.json())
+  } catch {
+    error.value = '进度加载失败，请稍后重新打开页面。'
   }
-  error.value = '进度加载失败，请稍后重新打开页面。'
 }
 
 onMounted(loadSnapshot)
