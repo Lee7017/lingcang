@@ -3,6 +3,9 @@ name: Deploy VitePress to GitHub Pages
 on:
   push:
     branches: [main]
+    # 公开赞助数据从仓库直读；只修改该 JSON 时不重新构建官网。
+    paths-ignore:
+      - 'support/ios.json'
   workflow_dispatch:
 
 permissions:
