@@ -31,10 +31,14 @@ const syncedText = computed(() => {
   if (!snapshot.value) return error.value ? '读取失败' : '正在获取'
   if (!snapshot.value.syncedAt || !configured.value) return '尚未同步'
   const date = new Date(snapshot.value.syncedAt)
-  return Number.isNaN(date.getTime()) ? '时间未知' : new Intl.DateTimeFormat('zh-CN', {
-    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+  if (Number.isNaN(date.getTime())) return '时间未知'
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hour12: false
-  }).format(date)
+  }).formatToParts(date)
+  const part = (type: 'month' | 'day' | 'hour' | 'minute') =>
+    parts.find(item => item.type === type)?.value ?? '--'
+  return `${part('month')}/${part('day')} ${part('hour')}:${part('minute')}`
 })
 
 // 按真实授权支持者分配弹幕轨道。复制可见内容仅用于无缝循环，不增加统计人数。
@@ -155,7 +159,7 @@ onMounted(loadSnapshot)
     <div class="ios-sync">
       <div class="ios-sync-line">
         <span>最近同步：{{ syncedText }}</span>
-        <span>每隔数小时更新，间隔不固定</span>
+        <span>每隔数小时更新</span>
       </div>
       <p v-if="error" class="ios-error" role="status">{{ error }}</p>
     </div>
@@ -235,7 +239,7 @@ onMounted(loadSnapshot)
 .ios-danmaku-panel:hover .ios-danmaku-track,.ios-danmaku-panel:focus-within .ios-danmaku-track { animation-play-state:paused; }
 .ios-danmaku-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--xs-muted); font-size:11px; }
 @media (max-width:680px) {
-  .ios-sync-line { font-size:10px; flex-wrap:wrap; white-space:normal; }
+  .ios-sync-line { font-size:10px; flex-wrap:nowrap; white-space:nowrap; }
   .ios-card-title h2 { font-size:17px; }
   .ios-support-link { padding:0 9px 0 10px; }
   .ios-funding { margin-top:17px; }
