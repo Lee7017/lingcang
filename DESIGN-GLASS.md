@@ -1,4 +1,4 @@
-# 灵仓（LINGCANG）官网 · 黑白玻璃拟态视觉规范
+# PleaseJot 官网 · 黑白玻璃拟态视觉规范
 
 ## 适用范围
 
@@ -83,7 +83,7 @@ CSS 变量定义在 `docs/.vitepress/theme/custom.css` 的 `:root` / `.dark` 内
 
 ## 全站版权页脚
 
-- 使用 VitePress 默认主题的原生 Footer，在 `themeConfig.footer.copyright` 设置 `Copyright © 2026 灵仓（LINGCANG）. All rights reserved.`。
+- 使用 VitePress 默认主题的原生 Footer，在 `themeConfig.footer.copyright` 设置 `Copyright © 2026 PleaseJot. All rights reserved.`。
 - 覆盖 VitePress 默认文档页隐藏 Footer 的规则，使首页、下载、文档、更新日志和关于页均显示版权声明；不新增重复的自定义 Footer。
 - 页脚使用次要文字色、12px 字号和细分隔线，支持深浅色与手机布局；自动化审核检查每个页面的页脚内容和可见性。
 
@@ -92,16 +92,15 @@ CSS 变量定义在 `docs/.vitepress/theme/custom.css` 的 `:root` / `.dark` 内
 
 - 官网的首页和下载页保留「申请邀请码」入口，统一指向 `/invite/`。
 - 不使用网页申请表、`mailto:` 自动打开邮箱、Formspree 或问卷星；由用户自己打开常用邮箱发送邮件。
-- 申请页展示收件邮箱 `3406521093@qq.com`、邮件主题「灵仓内测邀请码申请」和可编辑的邮件正文示例，说明昵称、手机号均必填。
+- 申请页展示收件邮箱 `3406521093@qq.com`、邮件主题「PleaseJot 内测邀请码申请」和可编辑的邮件正文示例，说明昵称、手机号均必填。
 - 页面提供「复制邮箱」「复制主题」「复制邮件正文」功能；用户可以直接在当前网页修改正文里的昵称和手机号，再复制修改后的完整正文。修改内容不会提交、发送或持久保存。
 - 官网页面不接收或保存昵称、手机号、邮箱密码；申请数据只会随着用户主动发送的邮件进入收件邮箱。
 - 浏览器审核覆盖桌面/手机、亮色/暗色、可编辑正文及修改后复制功能、无网页表单/自动邮件链接、布局及已有申请入口。
 
 
-## 灵仓品牌名称
+## PleaseJot 品牌名称
 
-- 官网使用「灵仓」作为中文产品名称；英文统一使用大写「LINGCANG」。
-- VitePress 站点标题、SEO 描述、导航、首页、下载、教程、邀请码申请邮件、版权页脚、README 均已更名。
-- GitHub Pages 构建路径与 GitHub Releases 下载地址根据实际仓库名自动生成；仓库改名后重新部署即可适配，既有 Pages 网址不会自动重定向。
-- 现有图形标识暂保留，后续若确认新 Logo，再同步更换 SVG 与 PNG。
-- 浏览器审核检查页头及页面标题中的当前产品名称，防止页面显示错误的品牌。
+- 网站、下载、文档、申请入口、版权与 SEO 中的产品名称统一为 **PleaseJot**。
+- 保留现有 GitHub 仓库 `Lee7017/lingcang`、GitHub Pages 路径 `/lingcang/`、Release 下载地址和 OTA 技术路径，不因品牌变更破坏下载和更新流程。
+- 现有图形标识暂保留，SVG 无障碍名称已更新；PNG 图标若未来换标识，再统一替换。
+- 浏览器审核检查当前产品名称，防止回归到旧品牌。
