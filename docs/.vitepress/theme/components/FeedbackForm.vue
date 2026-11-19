@@ -23,7 +23,7 @@ const embedSrc = (() => {
 // 仅在当前反馈路由启用：手机端禁止官网外层滚动，离开路由即恢复。
 const immersiveClass = 'feedback-immersive'
 const route = useRoute()
-const isFeedbackRoute = (path: string) => /(?:^|\\/)feedback\\/?(?:index\\.html)?$/.test(path)
+const isFeedbackRoute = (path: string) => /(?:^|\/)feedback\/?(?:index\.html)?$/.test(path)
 const syncImmersiveMode = (path: string) => {
   if (typeof document === 'undefined') return
   document.documentElement.classList.toggle(immersiveClass, Boolean(embedSrc) && isFeedbackRoute(path))
