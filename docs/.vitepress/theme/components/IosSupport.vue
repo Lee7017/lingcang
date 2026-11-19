@@ -33,7 +33,7 @@ const syncedText = computed(() => {
   const date = new Date(snapshot.value.syncedAt)
   return Number.isNaN(date.getTime()) ? '时间未知' : new Intl.DateTimeFormat('zh-CN', {
     timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', hour12: false
+    hour: '2-digit', minute: '2-digit', hour12: false
   }).format(date)
 })
 
@@ -155,7 +155,7 @@ onMounted(loadSnapshot)
     <div class="ios-sync">
       <div class="ios-sync-line">
         <span>最近同步：{{ syncedText }}</span>
-        <span>后台每 30 分钟更新数据</span>
+        <span>每隔数小时更新，间隔不固定</span>
       </div>
       <p v-if="error" class="ios-error" role="status">{{ error }}</p>
     </div>
@@ -235,7 +235,7 @@ onMounted(loadSnapshot)
 .ios-danmaku-panel:hover .ios-danmaku-track,.ios-danmaku-panel:focus-within .ios-danmaku-track { animation-play-state:paused; }
 .ios-danmaku-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--xs-muted); font-size:11px; }
 @media (max-width:680px) {
-  .ios-sync-line { font-size:10px; }
+  .ios-sync-line { font-size:10px; flex-wrap:wrap; white-space:normal; }
   .ios-card-title h2 { font-size:17px; }
   .ios-support-link { padding:0 9px 0 10px; }
   .ios-funding { margin-top:17px; }
