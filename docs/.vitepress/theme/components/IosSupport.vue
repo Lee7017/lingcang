@@ -83,19 +83,40 @@ function decodeGitHubContent(value: unknown): unknown {
   return JSON.parse(new TextDecoder().decode(bytes))
 }
 
+async function fetchPublicJson(url: string): Promise<unknown> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10000)
+  try {
+    const res = await fetch(url, { cache: 'no-store', signal: controller.signal })
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    return await res.json()
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 async function loadSnapshot() {
   error.value = ''
+  let rawUnconfigured: IosSupportSnapshot | null = null
   for (const source of ['raw', 'api'] as const) {
     try {
       const url = source === 'raw' ? snapshotRawUrl + '?v=' + Date.now() : snapshotApiUrl
-      const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(10000) })
-      if (!res.ok) throw new Error('HTTP ' + res.status)
-      const json: unknown = await res.json()
-      snapshot.value = parseSnapshot(source === 'raw' ? json : decodeGitHubContent(json))
+      const json = await fetchPublicJson(url)
+      const data = parseSnapshot(source === 'raw' ? json : decodeGitHubContent(json))
+      // Raw CDN 可能还缓存旧的 unconfigured，交给 API 核对当前状态。
+      if (source === 'raw' && data.status === 'unconfigured') {
+        rawUnconfigured = data
+        continue
+      }
+      snapshot.value = data
       return
     } catch (reason) {
       console.warn('PleaseJot iOS 支持数据读取失败：' + source, reason)
     }
+  }
+  if (rawUnconfigured) {
+    snapshot.value = rawUnconfigured
+    return
   }
   error.value = '进度数据读取失败，请检查网络后重新打开页面。'
 }
