@@ -140,8 +140,11 @@ try {
       if (v.width === 390 && v.scheme === 'light') {
         await page.locator('.VPNavBarTitle a').first().click()
         await page.waitForURL(url => !url.pathname.includes('/feedback/'), { timeout: 10000 })
-        if (await page.evaluate(() => document.documentElement.classList.contains('feedback-immersive')))
-          failures.push(prefix + ': scroll lock leaked after leaving feedback')
+        const released = await page.waitForFunction(
+          () => !document.documentElement.classList.contains('feedback-immersive'),
+          { timeout: 5000 }
+        ).then(() => true).catch(() => false)
+        if (!released) failures.push(prefix + ': scroll lock leaked after leaving feedback')
       }
     } else {
       if (state.iframeRect?.height > 1000) failures.push(prefix + ': desktop iframe is still oversized')

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
+import { useRoute } from 'vitepress'
 import { Clock3, MessageSquareText, ShieldCheck } from 'lucide-vue-next'
 import { tencentQuestionnaireEmbedSrc } from '../data/feedback'
 
@@ -21,12 +22,18 @@ const embedSrc = (() => {
 
 // 仅在当前反馈路由启用：手机端禁止官网外层滚动，离开路由即恢复。
 const immersiveClass = 'feedback-immersive'
-onMounted(() => {
-  if (embedSrc) document.documentElement.classList.add(immersiveClass)
-})
-onUnmounted(() => {
-  document.documentElement.classList.remove(immersiveClass)
-})
+const route = useRoute()
+const isFeedbackRoute = (path: string) => /(?:^|\\/)feedback\\/?(?:index\\.html)?$/.test(path)
+const syncImmersiveMode = (path: string) => {
+  if (typeof document === 'undefined') return
+  document.documentElement.classList.toggle(immersiveClass, Boolean(embedSrc) && isFeedbackRoute(path))
+}
+
+// VitePress 会先更新 URL，再切换页面组件。立即监听路由，防止外层滚动锁
+// 在切换去“首页”“下载”等页面的短暂过渡中残留。
+watch(() => route.path, syncImmersiveMode, { flush: 'sync' })
+onMounted(() => syncImmersiveMode(route.path))
+onUnmounted(() => document.documentElement.classList.remove(immersiveClass))
 </script>
 
 <template>
