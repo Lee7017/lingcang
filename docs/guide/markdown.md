@@ -4,7 +4,7 @@ title: Markdown 编辑
 
 # Markdown 编辑
 
-灵仓使用 Markdown 组织笔记内容，编辑器目标技术为 Vditor IR。
+PleaseJot 使用 Markdown 组织笔记内容，编辑器目标技术为 Vditor IR。
 
 ## 标题
 
