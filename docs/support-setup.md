@@ -2,16 +2,16 @@
 
 ## 统计数据与官网彻底分离
 
-- **`Lee7017/lingcang`**：只负责官网页面、展示 UI。更新网站代码才会重新构建和部署。
-- **`Lee7017/lingcang-ota`**：负责 React 前端 OTA Releases，以及**独立的公开统计文件** `support/ios.json`。
-- 官网从 `https://raw.githubusercontent.com/Lee7017/lingcang-ota/main/support/ios.json` 读取统计。首次打开页面读取一次，**不提供手动刷新按钮，也不定时轮询**；重新打开页面会重新读取公开数据（仍可能有 CDN 缓存延迟）。
+- **`Lee7017/pleasejot`**：只负责官网页面、展示 UI。更新网站代码才会重新构建和部署。
+- **`Lee7017/pleasejot-ota`**：负责 React 前端 OTA Releases，以及**独立的公开统计文件** `support/ios.json`。
+- 官网从 `https://raw.githubusercontent.com/Lee7017/pleasejot-ota/main/support/ios.json` 读取统计。首次打开页面读取一次，**不提供手动刷新按钮，也不定时轮询**；重新打开页面会重新读取公开数据（仍可能有 CDN 缓存延迟）。
 - 爱发电订单变化时，OTA 仓库中的 GitHub Actions 仅提交 `support/ios.json`；**不构建、不部署官网**。
 - 该链接由 GitHub Raw CDN 提供，可能有几分钟缓存，手动刷新不保证立即显示刚刚提交的金额；页面必须显示真实的最后公开同步时间。
 
 ## 开通爱发电
 
 1. 在爱发电创建专门用于 iOS 开发支持的方案，取得它的 `plan_id`，避免混入其他订单。爱发电提供订单查询 API，具体字段和退款状况需用真实账号核验。
-2. 在 **`Lee7017/lingcang-ota` 仓库**的 Settings → Secrets and variables → Actions → **Secrets** 添加：
+2. 在 **`Lee7017/pleasejot-ota` 仓库**的 Settings → Secrets and variables → Actions → **Secrets** 添加：
    - `AFDIAN_USER_ID`：爱发电 API user_id。
    - `AFDIAN_API_TOKEN`：爱发电 API token。
    - `AFDIAN_PLAN_ID`：仅统计此 iOS 开发支持方案的订单 ID。
