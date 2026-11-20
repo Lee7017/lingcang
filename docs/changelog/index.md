@@ -9,12 +9,8 @@ aside: false
 
 **左侧是版本导航**，按年份分组，同一年份按发布日期由新到旧排列。点击具体版本可阅读完整的发布说明。
 
-当前官网模板尚未收录实际发布版本，因此侧边栏会显示「暂无已发布版本」，不会填入虚构版本号。
+## 最新版本
 
-## 版本记录如何维护
-
-每次通过 GitHub Releases 发布真实版本后，在 `docs/changelog/releases/` 增加一个 Markdown 文件，文件名必须采用 `YYYY-MM-DD-v版本号.md` 格式，例如 `2026-11-02-v1.0.0.md`（**仅为命名示例，不代表该版本已发布**）。
-
-复制项目中的 `templates/changelog-release.md`，替换实际版本号、发布日期和变更内容。下次构建时，VitePress 会自动把这个版本加入左侧栏，无须手工修改导航配置。
+[v0.1.0 · 2026-11-20](/changelog/releases/2026-11-20-v0.1.0.html)：首个正式发布版本，提供 Windows 64 位与 Android ARM64 安装包。
 
 安装包只通过 [软件下载](/download/) 页面链接到 GitHub Releases；123 云盘不提供安装包下载。

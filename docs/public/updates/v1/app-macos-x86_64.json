@@ -1,0 +1,5 @@
+{
+  "keyId": "release-2026",
+  "payload": "{\"schema\":1,\"kind\":\"app\",\"channel\":\"stable\",\"target\":\"macos-x86_64\",\"release\":null}",
+  "signature": "ced9137fbe5104c003e05f87a8f6f5f52fc46460a62f54eafad3073eaa75f0d3aee8be4ae8d7d1a18c4663d67971865883ec402418e712f015f5cfa7fff11200"
+}

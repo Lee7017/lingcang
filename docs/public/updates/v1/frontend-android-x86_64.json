@@ -1,0 +1,5 @@
+{
+  "keyId": "release-2026",
+  "payload": "{\"schema\":1,\"kind\":\"frontend\",\"channel\":\"stable\",\"target\":\"android-x86_64\",\"release\":null}",
+  "signature": "d87e17d264fa3c3e37452f895ec97653d7182cf4dc62456104f6ceea65b5bf450f319e2001788da9e48413ff32488f0a8822f51c3f3b4042200b5d410240a803"
+}

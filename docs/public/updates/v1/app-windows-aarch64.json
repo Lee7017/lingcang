@@ -1,0 +1,5 @@
+{
+  "keyId": "release-2026",
+  "payload": "{\"schema\":1,\"kind\":\"app\",\"channel\":\"stable\",\"target\":\"windows-aarch64\",\"release\":null}",
+  "signature": "016c605eb75ab84ebfabfff337f7d1efd282fc6edebc763b6a43bbe9b7f94d33060de54b2111fcea74818227f9b5d995b7458458f6ee03d364f6a88763a8ab0e"
+}

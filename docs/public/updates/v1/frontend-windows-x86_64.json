@@ -1,0 +1,5 @@
+{
+  "keyId": "release-2026",
+  "payload": "{\"schema\":1,\"kind\":\"frontend\",\"channel\":\"stable\",\"target\":\"windows-x86_64\",\"release\":null}",
+  "signature": "fd9bf7a80e95e315067e52c4b118481da58003587c2b7f12771c0517bd193d97fa3d478e3ef07ca4d061848aff71956a469a9c584ea440c8901befef0c4de907"
+}

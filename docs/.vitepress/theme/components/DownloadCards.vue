@@ -33,7 +33,7 @@ const downloadPlatforms = releasePlatforms.filter(item => item.name !== 'iOS / i
     </div>
     <div class="download-note">
       <Github :size="23"/>
-      <div><strong>统一使用 GitHub Releases 发布安装包</strong><p>123 云盘只规划用于软件内部云端同步，不是下载渠道。发布新版本后，在 <code>releases.ts</code> 填入真实资源地址并修改状态。</p>
+      <div><strong>统一使用 GitHub Releases 发布安装包</strong><p>下载当前版本的安装包，或查看历史版本、Windows MSI 安装包与文件校验值。</p>
       <a v-if="releasesPageUrl" class="text-link" :href="releasesPageUrl" target="_blank" rel="noopener noreferrer">查看所有历史版本 <ArrowRight :size="17"/></a></div>
     </div>
     <div class="download-support"><ShieldCheck :size="18"/><span>正式下载前请核对发行者、版本号和文件来源。Apple 平台须按实际签名及分发流程处理。</span></div>

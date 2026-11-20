@@ -1,0 +1,5 @@
+{
+  "keyId": "release-2026",
+  "payload": "{\"schema\":1,\"kind\":\"frontend\",\"channel\":\"stable\",\"target\":\"macos-x86_64\",\"release\":null}",
+  "signature": "0ce665619514dc35d8847456c84f55b6f5bb4d34f606c65cf17c1ac8eca01cfeba68ab5089b1b3055e8e3fc8305ad790e636605d30172b8f4c3262c4dd86a70d"
+}

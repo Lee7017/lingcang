@@ -1,0 +1,5 @@
+{
+  "keyId": "release-2026",
+  "payload": "{\"schema\":1,\"kind\":\"app\",\"channel\":\"stable\",\"target\":\"android-armv7\",\"release\":null}",
+  "signature": "24dce6329119c11f6d921e81786a4e2fbffdda538310c0a5fad3ea0bd1afa8200f35b7a5d7bb3d46e1fba3385eb1a5ce571828089a945e75f1b958d9a6a80804"
+}
