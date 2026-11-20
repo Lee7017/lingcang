@@ -19,7 +19,7 @@
 - **首页三个重点**：局域网 P2P 同步；首页文件树；Super MarkDown（手写/音视频/Office/PDF，Office 仅渲染）。
 - **唯一下载来源**：GitHub Releases。没有 123 云盘备用下载或公开分享。
 - **123 云盘**：仅作为软件内云端同步的未来规划，未实现时不宣传为已支持。
-- **Web Mock**：当前只保留 `/demo/` 的待接入说明页，既不包含 React 应用，也不执行 Tauri/Rust 功能。后续可以通过独立构建把真实 Web Mock 产物覆盖进 `/demo/`。
+- **Web 在线体验**：`/demo/` 使用独立的 React + Vditor 演示构建，内存数据刷新重置，不访问真实认证服务器、文件系统或设备同步。
 - **真实截图**：首页的应用画面是排版示意，已明确标注，正式版需替换。不同操作系统的下载状态默认“未开放”。
 
 ## 本地启动
@@ -60,15 +60,15 @@ URL 空缺时按钮保持禁用，不会生成假的下载链接。iOS/iPadOS �
 
 ## 将现有 Web Mock 接入 `/demo/`
 
-根据 PleaseJot 原有设计，React + Vditor UI 使用构建期选定的内存 Mock API；**不可直接把 Native 版本打包成 Web 演示**。现有应用尚无公开 `build:demo` 入口，必须由应用工程单独添加并验证。
+应用项目已提供 `npm run build:demo`，使用独立的 demo 构建模式与内存 Mock API，跳过真实账号认证。**不可把 Native 或普通登录构建放入官网演示。**
 
 接入步骤：
 
-1. 在**真正的应用仓库**基于当前工作树新增公开演示专用构建，保留 `dev:web` 与 Native 构建含义。
-2. 设置演示应用的 Vite `base` 为网站实际 `base` 后加 `demo/`（例如 `/REPO/demo/`）；验证字体、图片、Worker/WASM 等资源路径。
-3. 将演示应用构建成静态文件，确保内部路径和刷新行为可用。
-4. 在官网仓库执行 `DEMO_DIST=/path/to/real/mock/dist npm run build:with-demo`。脚本会以真实 Web Mock 静态产物覆盖 `docs/.vitepress/dist/demo/`，不再显示占位页。
-5. 若需在 GitHub Actions 中自动构建演示应用，请先确定仓库结构、依赖和授权访问方式，再增设真实源码构建步骤；当前工作流仅构建官网，**不会假装已经构建 Web Mock**。
+1. 在应用仓库执行 `npm run build:demo`，产物在 `tmp/web-demo/`；默认 base 为 `/pleasejot/demo/`，可通过 `PLEASEJOT_DEMO_BASE` 调整。
+2. 运行 `node apps/tauri/scripts/web-demo-regression.mjs`，验证桌面/移动布局、Vditor 子路径资源、编辑保存和刷新重置。
+3. 将静态产物压缩为独立的 `pleasejot-web-demo-<版本>-<SHA前缀>.zip`，上传到 GitHub Release；它不属于原生热更新。
+4. 修改官网 `demo.json` 中的固定下载地址、字节数和完整 SHA-256。现有 `build:with-demo` 流程会下载并校验演示包，再替换 `docs/.vitepress/dist/demo/`。
+5. 本地可用 `DEMO_DIST=/absolute/path/to/tmp/web-demo npm run build:with-demo`，仍校验 demo 身份和网站 base。GitHub Actions 使用 `demo.json`，后续网站部署会持续附带同一演示包。
 
 `/demo/` 的演示环境应明确提示内存 Mock、刷新重置、设备同步仅模拟，不接入账号认证服务器、文件系统和真实局域网同步。
 

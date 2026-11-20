@@ -18,7 +18,7 @@ import {
       <p class="hero-lead">以 Markdown 为基础，融合首页文件树、多格式附件与局域网同步。<br class="desktop-only" />在自己的设备中，建立清晰而自由的个人资料库。</p>
       <div class="hero-actions">
         <a class="xs-button primary" :href="withBase('/download/')"><Download :size="17" />下载 PleaseJot</a>
-        <a class="xs-button secondary" :href="withBase('/demo/')"><Play :size="17" />在线体验</a>
+        <a class="xs-button secondary" :href="withBase('/demo/')" target="_self"><Play :size="17" />在线体验</a>
       </div>
       <p class="platform-caption">面向 Windows / macOS / Android / iOS / iPadOS · 实际开放平台以发布信息为准</p>
       <p class="hero-invite-link">想参与内测？<a :href="withBase('/invite/')">申请邀请码 <ArrowRight :size="14" /></a></p>
